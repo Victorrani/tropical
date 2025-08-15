@@ -1,21 +1,39 @@
 import zipfile
 from pathlib import Path
+import logging
+import time
 import cdsapi
 
-print()
-print()
-script_path = Path(__file__).resolve()
-project_root = script_path.parent.parent.parent
-print("Raiz do projeto:", project_root)
-print()
-print()
+
+# Caminho absoluto do script
+DIR_SCRIPT = Path(__file__).resolve().parent
+
+# Raiz do projeto (3 níveis acima do script)
+DIR_ROOT = DIR_SCRIPT.parent.parent
+
+# Diretórios importantes
+DIR_OUT = DIR_ROOT / "datain" / "raw"
+DIR_LOGS = DIR_ROOT / "src" / "logs"
+
 
 def download_data():
     """
     Função para baixar dados do ERA5 usando a API do CDS.
     """
-    # Aqui você pode adicionar o código para baixar os dados, se necessário.
+    
+    print(f"Raiz do projeto:     {DIR_ROOT}")
+    print(f"Diretório do script: {DIR_SCRIPT}")
+    print(f"Diretório de saída:  {DIR_OUT}")
+    print(f"Diretório de logs:   {DIR_LOGS}")
 
+    tempo_inicio = time.time()
+    logging.basicConfig(
+        filename=DIR_LOGS / 'download.log',
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s'
+    )
+
+    logging.info("Iniciando o download dos dados do ERA5.")
     #===== 1) Download ERA5 =====
     dataset = "reanalysis-era5-single-levels-monthly-means"
     request = {
@@ -47,44 +65,52 @@ def download_data():
             "total_column_water_vapour"
         ],
         "year": ["2024"],
-        "month": ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"],
+        "month": ["01"], #, "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"],
         "time": ["00:00"],
         "data_format": "netcdf",
         "download_format": "unarchived"
     }
+    logging.info(f"Requisição: {dataset}")
+    logging.info("Variáveis solicitadas: " + ", ".join(request["variable"]))
+    logging.info("Período: " + ", ".join(request["year"]) + " - " + ", ".join(request["month"]))
+    logging.info("Formato de dados: " + request["data_format"])
 
+    print("Iniciando o download dos dados do ERA5...")
+    print("Aguarde, isso pode levar alguns minutos...")
     client = cdsapi.Client()
     client.retrieve(dataset, request).download()
     print("✔ Dados do ERA5 baixados com sucesso.")
-    return True
 
-download_data()
 
-quit()
+
 #===== 2) Procurar o arquivo .zip baixado =====
 
-current_dir = Path.cwd()
 
+    zip_files = list(DIR_SCRIPT.glob("*.zip"))  # <-- aqui está o certo
 
-zip_files = list(current_dir.glob("*.zip"))
-dir_out = project_root / "data" / "raw"   # <-- aqui está o certo
+    if not zip_files:
+        raise FileNotFoundError("Nenhum arquivo .zip encontrado no diretório atual após o download.")
 
-if not zip_files:
-    raise FileNotFoundError("Nenhum arquivo .zip encontrado no diretório atual após o download.")
+    zip_path = zip_files[0]  # pega o primeiro encontrado
 
-zip_path = zip_files[0]  # pega o primeiro encontrado
+    # ===== 3) Extrair para o diretório desejado =====
+    dest_dir = Path(DIR_OUT)
+    dest_dir.mkdir(parents=True, exist_ok=True)
 
-# ===== 3) Extrair para o diretório desejado =====
-dest_dir = Path(dir_out)
-dest_dir.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        zip_ref.extractall(dest_dir)
 
-with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-    zip_ref.extractall(dest_dir)
+    print(f"✔ Arquivo {zip_path.name} extraído para {dest_dir}")
 
-print(f"✔ Arquivo {zip_path.name} extraído para {dest_dir}")
+    # ===== 4) Remover o arquivo .zip após a extração =====
+    zip_path.unlink()
+    print(f"✔ Arquivo {zip_path.name} removido após a extração.")
 
-# ===== 4) Remover o arquivo .zip após a extração =====
-zip_path.unlink()
-print(f"✔ Arquivo {zip_path.name} removido após a extração.")
+    tempo_fim = time.time()
+    tempo_total = tempo_fim - tempo_inicio
+    tempo_minutos = tempo_total / 60
+    print(f"Tempo total de download: {tempo_minutos:.2f} minutos")
+    logging.info(f"Tempo total de download: {tempo_minutos:.2f} minutos")
 
-
+if __name__ == "__main__":
+    download_data()
