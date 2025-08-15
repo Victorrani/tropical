@@ -1,0 +1,3 @@
+name=box1;lat_max=10;lat_min=-10;lon_max=90;lon_min=60
+name=box2;lat_max=5;lat_min=-15;lon_max=30;lon_min=0
+
