@@ -8,23 +8,26 @@ import cdsapi
 # Caminho absoluto do script
 DIR_SCRIPT = Path(__file__).resolve().parent
 
-# Raiz do projeto (3 níveis acima do script)
+# Raiz do projeto 
 DIR_ROOT = DIR_SCRIPT.parent.parent
 
 # Diretórios importantes
 DIR_OUT = DIR_ROOT / "datain" / "raw"
-DIR_LOGS = DIR_ROOT / "src" / "logs"
+DIR_LOGS = DIR_ROOT / "logs"
 
 
 def download_data():
     """
     Função para baixar dados do ERA5 usando a API do CDS.
+    Esta função realiza o download de dados climáticos do ERA5, extrai os arquivos baixados
+    de um arquivo .zip e organiza os dados em um diretório específico.
     """
     
     print(f"Raiz do projeto:     {DIR_ROOT}")
     print(f"Diretório do script: {DIR_SCRIPT}")
     print(f"Diretório de saída:  {DIR_OUT}")
     print(f"Diretório de logs:   {DIR_LOGS}")
+    print('-' * 50)
 
     tempo_inicio = time.time()
     logging.basicConfig(
@@ -35,6 +38,7 @@ def download_data():
 
     logging.info("Iniciando o download dos dados do ERA5.")
     #===== 1) Download ERA5 =====
+    # Altere o ano e o mês conforme necessário
     dataset = "reanalysis-era5-single-levels-monthly-means"
     request = {
         "product_type": ["monthly_averaged_reanalysis"],
@@ -65,7 +69,7 @@ def download_data():
             "total_column_water_vapour"
         ],
         "year": ["2024"],
-        "month": ["01"], #, "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"],
+        "month": ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"],
         "time": ["00:00"],
         "data_format": "netcdf",
         "download_format": "unarchived"
