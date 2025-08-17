@@ -1,0 +1,3 @@
+#longitude 0-360
+name=amazonia;lat_max=5;lat_min=-20;lon_max=310;lon_min=280
+
