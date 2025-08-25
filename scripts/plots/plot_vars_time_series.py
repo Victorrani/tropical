@@ -36,7 +36,13 @@ files = sorted(DIR_CSV.glob("*.csv"))
 for file in files:
     print(f"Lendo arquivo: {file}")
     
-    
+    stem = file.stem  # -> "time_series_rio_grande_do_sul"
+
+# Removemos o prefixo "time_series_"
+    nome_regiao = stem.replace("time_series_", "")
+
+    print(nome_regiao)  # -> rio_grande_do_sul
+  
     df = pd.read_csv(file, parse_dates=["time"])
     
 
@@ -44,7 +50,7 @@ for file in files:
         if var == "time":
             continue
         
-        import re
+        
 
         match = re.match(r"^(.*?) \((.*?)\) \((.*?)\)$", var)
         if match:
@@ -55,7 +61,7 @@ for file in files:
        
         print(f"Plotando variável: {var}")
   
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(20, 6))
 
         ax.plot(df["time"], df[var], marker='o')
         ax.set_title(f'Time Series of {nome_completo}')
@@ -66,6 +72,7 @@ for file in files:
 
         outdir = DIR_FIGS / file.stem / nome_abreviado
         outdir.mkdir(parents=True, exist_ok=True)
-        fig.savefig(outdir / f'{nome_abreviado}_time_series.jpg', dpi=300, bbox_inches='tight')
+        fig.savefig(outdir / f'{nome_regiao}_{nome_abreviado}_time_series.jpg', dpi=300, bbox_inches='tight')
+        plt.close(fig)
 
-        print(f'Saved plot for {var} to {outdir / f"{nome_abreviado}_time_series.jpg"}')
+        print(f'Saved plot for {var} to {outdir / f"{nome_regiao}_{nome_abreviado}_time_series.jpg"}')
