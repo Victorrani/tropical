@@ -1,4 +1,5 @@
 #longitude 0-360
-name=amazonia;lat_max=5;lat_min=-20;lon_max=310;lon_min=280
-#name=america_do_sul;lat_max=15;lat_min=-65;lon_max=330;lon_min=270
+name=sao_paulo;lat_max=-18;lat_min=-26;lon_max=317;lon_min=307
+name=rio_grande_do_sul;lat_max=-26;lat_min=-34;lon_max=311;lon_min=303
+
 
