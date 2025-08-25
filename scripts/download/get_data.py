@@ -68,7 +68,7 @@ def download_data():
             "total_column_water",
             "total_column_water_vapour"
         ],
-        "year": ["2024"],
+        "year": ["2020", "2021", "2022", "2023", "2024"],
         "month": ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"],
         "time": ["00:00"],
         "data_format": "netcdf",

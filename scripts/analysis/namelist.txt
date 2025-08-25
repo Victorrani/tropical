@@ -1,4 +1,4 @@
 #longitude 0-360
 name=amazonia;lat_max=5;lat_min=-20;lon_max=310;lon_min=280
-name=america_do_sul;lat_max=15;lat_min=-65;lon_max=330;lon_min=270
+#name=america_do_sul;lat_max=15;lat_min=-65;lon_max=330;lon_min=270
 

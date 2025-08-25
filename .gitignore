@@ -1,3 +1,4 @@
 # Ignorar todos os arquivos NetCDF
 *.nc
-
+*.png
+*.jpg
