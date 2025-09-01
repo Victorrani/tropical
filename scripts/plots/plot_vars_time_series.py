@@ -36,16 +36,16 @@ files = sorted(DIR_CSV.glob("*.csv"))
 for file in files:
     print(f"Lendo arquivo: {file}")
     
-    stem = file.stem  # -> "time_series_rio_grande_do_sul"
+    stem = file.stem  
 
 # Removemos o prefixo "time_series_"
     nome_regiao = stem.replace("time_series_", "")
 
-    print(nome_regiao)  # -> rio_grande_do_sul
+    print(nome_regiao)
   
     df = pd.read_csv(file, parse_dates=["time"])
     
-
+    
     for var in df.columns:
         if var == "time":
             continue
