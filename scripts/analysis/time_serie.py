@@ -15,8 +15,6 @@ def time_series_var():
 # Lista de arquivos NetCDF
     files = sorted(DIR_DATAIN.glob("*.nc"))
 
-    
-
     for file in files:
         df_resultado = pd.DataFrame()
         print(f"Lendo arquivo: {file}")
@@ -24,7 +22,7 @@ def time_series_var():
         ds = ds.rename({'valid_time': 'time'})
         nome_file = file.stem
 
-        print(f"  Nome do arquivo (sem extensão): {nome_file}")
+        print(f"  Nome do arquivo: {nome_file}")
         # Calcula a média espacial para cada variável em cada tempo
         medias = {}
         for var in ds.data_vars:
@@ -34,7 +32,7 @@ def time_series_var():
             print(f"  Processando variável: {var} -> coluna: {nome_coluna}")
 
             # Reduz em todas as dimensões menos 'time'
-            medias[nome_coluna] = ds[var].mean(dim=[d for d in ds[var].dims if d != "time"])
+            medias[nome_coluna] = ds[var].mean(dim=["latitude", "longitude"])
 
         # Converte para DataFrame
         df_medias = xr.Dataset(medias).to_dataframe()
@@ -46,6 +44,26 @@ def time_series_var():
         # Resetar o índice (para garantir que 'time' vire coluna)
         df_resultado = df_resultado.reset_index()
 
+        print(df_resultado.columns)
+
+        sw_nettop = df_resultado['avg_tnswrf (W m**-2) (Time-mean top net short-wave radiation flux)'] * (-1) 
+        lw_nettop = df_resultado['avg_tnlwrf (W m**-2) (Time-mean top net long-wave radiation flux)'] * (-1)
+
+        sw_netsrf = df_resultado['avg_snswrf (W m**-2) (Time-mean surface net short-wave radiation flux)'] * (-1)
+        lw_netsrf = df_resultado['avg_snlwrf (W m**-2) (Time-mean surface net long-wave radiation flux)'] * (-1)
+
+        sh = df_resultado['avg_ishf (W m**-2) (Time-mean surface sensible heat flux)'] * (-1)
+        lh = df_resultado['avg_slhtf (W m**-2) (Time-mean surface latent heat flux)'] * (-1)
+        mtpr = df_resultado['avg_tprate (kg m**-2 s**-1) (Time-mean total precipitation rate)'] * 2500000
+
+
+        df_resultado['balanc_earth (W m**-2) (earth_balance)'] = sw_nettop + lw_nettop
+
+        df_resultado['balanc_atmos (W m**-2) (atmospheric_balance)'] = (-1)*(sw_nettop - sw_netsrf) + (-1)*(lw_nettop - lw_netsrf) + sh + mtpr
+
+        df_resultado['balanc_surface (W m**-2) (surface_balance)'] = (-1)*((sw_netsrf + lw_netsrf) - sh - lh)
+
+        print(df_resultado.columns)
 
         
 
