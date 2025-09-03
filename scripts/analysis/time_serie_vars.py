@@ -46,29 +46,52 @@ def time_series_var():
 
         print(df_resultado.columns)
 
-        sw_nettop = df_resultado['avg_tnswrf (W m**-2) (Time-mean top net short-wave radiation flux)'] * (-1) 
-        lw_nettop = df_resultado['avg_tnlwrf (W m**-2) (Time-mean top net long-wave radiation flux)'] * (-1)
-
-        sw_netsrf = df_resultado['avg_snswrf (W m**-2) (Time-mean surface net short-wave radiation flux)'] * (-1)
-        lw_netsrf = df_resultado['avg_snlwrf (W m**-2) (Time-mean surface net long-wave radiation flux)'] * (-1)
-
-        sh = df_resultado['avg_ishf (W m**-2) (Time-mean surface sensible heat flux)'] * (-1)
-        lh = df_resultado['avg_slhtf (W m**-2) (Time-mean surface latent heat flux)'] * (-1)
-        mtpr = df_resultado['avg_tprate (kg m**-2 s**-1) (Time-mean total precipitation rate)'] * 2500000
-
-        # correção de alguns sinais
-
-        df_resultado['avg_ishf (W m**-2) (Time-mean surface sensible heat flux)'] = df_resultado['avg_ishf (W m**-2) (Time-mean surface sensible heat flux)'] * (-1)
+        # trabalhando nas unidades e sinais das variáveis
+        df_resultado['tp_mm (mm) (Total precipitation)'] = df_resultado['tp (m) (Total precipitation)'] * 1000 * 30 
+        df_resultado['avg_ie (kg m**-2 s**-1) (Time-mean moisture flux)']
+        df_resultado['avg_sdirswrf (W m**-2) (Time-mean surface direct short-wave radiation flux)']
+        df_resultado['avg_sdirswrfcs (W m**-2) (Time-mean surface direct short-wave radiation flux, clear sky)']
+        df_resultado['avg_sdlwrf (W m**-2) (Time-mean surface downward long-wave radiation flux)']
+        df_resultado['avg_sdlwrfcs (W m**-2) (Time-mean surface downward long-wave radiation flux, clear sky)']
+        df_resultado['avg_sdswrf (W m**-2) (Time-mean surface downward short-wave radiation flux)']
+        df_resultado['avg_sdswrfcs (W m**-2) (Time-mean surface downward short-wave radiation flux, clear sky)']
+        df_resultado['avg_sduvrf (W m**-2) (Time-mean surface downward UV radiation flux)']
         df_resultado['avg_slhtf (W m**-2) (Time-mean surface latent heat flux)'] = df_resultado['avg_slhtf (W m**-2) (Time-mean surface latent heat flux)'] * (-1)
+        df_resultado['avg_snlwrf (W m**-2) (Time-mean surface net long-wave radiation flux)'] = df_resultado['avg_snlwrf (W m**-2) (Time-mean surface net long-wave radiation flux)'] * (-1)
+        df_resultado['avg_snlwrfcs (W m**-2) (Time-mean surface net long-wave radiation flux, clear sky)']
+        df_resultado['avg_snswrf (W m**-2) (Time-mean surface net short-wave radiation flux)'] = df_resultado['avg_snswrf (W m**-2) (Time-mean surface net short-wave radiation flux)']  * (-1)
+        df_resultado['avg_snswrfcs (W m**-2) (Time-mean surface net short-wave radiation flux, clear sky)']
+        df_resultado['avg_ishf (W m**-2) (Time-mean surface sensible heat flux)'] = df_resultado['avg_ishf (W m**-2) (Time-mean surface sensible heat flux)'] * (-1)
+        df_resultado['avg_tdswrf (W m**-2) (Time mean top downward short-wave radiation flux)']
+        df_resultado['avg_tnlwrf (W m**-2) (Time-mean top net long-wave radiation flux)'] = df_resultado['avg_tnlwrf (W m**-2) (Time-mean top net long-wave radiation flux)'] * (-1)
+        df_resultado['avg_tnlwrfcs (W m**-2) (Time-mean top net long-wave radiation flux, clear sky)']
+        df_resultado['avg_tnswrf (W m**-2) (Time-mean top net short-wave radiation flux)'] = df_resultado['avg_tnswrf (W m**-2) (Time-mean top net short-wave radiation flux)'] * (-1)
+        df_resultado['avg_tnswrfcs (W m**-2) (Time-mean top net short-wave radiation flux, clear sky)']
+        df_resultado['avg_tprate_W (W m**-2) (Time-mean total precipitation rate)'] = df_resultado['avg_tprate (kg m**-2 s**-1) (Time-mean total precipitation rate)'] * 2500000
+        df_resultado['avg_vimdf (kg m**-2 s**-1) (Time-mean total column vertically-integrated moisture divergence flux)']
 
 
-        df_resultado['balanc_earth (W m**-2) (earth_balance)'] = sw_nettop + lw_nettop
+        #earth balance 
+        lw_nettop = df_resultado['avg_tnlwrf (W m**-2) (Time-mean top net long-wave radiation flux)']
+        sw_nettop = df_resultado['avg_tnswrf (W m**-2) (Time-mean top net short-wave radiation flux)']
 
-        df_resultado['balanc_atmos (W m**-2) (atmospheric_balance)'] = (-1)*(sw_nettop - sw_netsrf) + (-1)*(lw_nettop - lw_netsrf) + sh + mtpr
+        #atmospheric balance
+        sw_netsrf = df_resultado['avg_snswrf (W m**-2) (Time-mean surface net short-wave radiation flux)']
+        lw_netsrf = df_resultado['avg_snlwrf (W m**-2) (Time-mean surface net long-wave radiation flux)']
+        lh = df_resultado['avg_slhtf (W m**-2) (Time-mean surface latent heat flux)']
+        sh = df_resultado['avg_ishf (W m**-2) (Time-mean surface sensible heat flux)']
+        mtpr = df_resultado['avg_tprate_W (W m**-2) (Time-mean total precipitation rate)']
 
-        df_resultado['balanc_surface (W m**-2) (surface_balance)'] = (-1)*((sw_netsrf + lw_netsrf) - sh - lh)
+        #surface balance
+
+        df_resultado['balanc_earth (W m**-2) (earth_balance)'] = lw_nettop + sw_nettop
+
+        df_resultado['balanc_atmos (W m**-2) (atmospheric_balance)'] = (-1)*(sw_nettop - sw_netsrf) + (-1)*(lw_nettop-lw_netsrf) + sh + mtpr
+
+        df_resultado['balanc_surface (W m**-2) (surface_balance)'] = (sw_netsrf+lw_netsrf) - sh - lh
 
         print(df_resultado.columns)
+
 
         
 
