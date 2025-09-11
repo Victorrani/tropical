@@ -77,7 +77,7 @@ def slice_box():
             ds_box = ds.sel({"latitude": slice(latmax, latmin), "longitude": slice(lonmin, lonmax)})
             print(f"Box: {name}, Latitude: {latmin}|{latmax}, Longitude: {lonmin}|{lonmax}")
 
-            output_dir = DIR_OUT / exp_name
+            output_dir = DIR_OUT / exp_name / name
             output_dir.mkdir(parents=True, exist_ok=True)
 
             ds_box.to_netcdf(output_dir / f"{exp_name}_{nome_curto}_{name}.nc", mode="w", format="NETCDF4")
