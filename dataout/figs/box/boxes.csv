@@ -1,3 +1,4 @@
-name,lat_max,lat_min,lon_max,lon_min
-sao_paulo,-18.0,-26.0,317,307
-rio_grande_do_sul,-26.0,-34.0,311,303
+exp_name,name,lat_max,lat_min,lon_max,lon_min
+EXP1,amazonia_E,0.0,-5.0,-70.0,-80.0
+EXP1,amazonia_W,0.0,-5.0,-70.0,-75.0
+EXP2,amazonia_S,-5.0,-10.0,-70.0,-80.0

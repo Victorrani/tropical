@@ -84,7 +84,7 @@ def time_series_var():
 
         #surface balance
 
-        df_resultado['balanc_earth (W m**-2) (earth_balance)'] = lw_nettop + sw_nettop
+        df_resultado['balanc_earth (W m**-2) (earth_balance)'] = (-1)*(lw_nettop + sw_nettop)
 
         df_resultado['balanc_atmos (W m**-2) (atmospheric_balance)'] = (-1)*(sw_nettop - sw_netsrf) + (-1)*(lw_nettop - lw_netsrf) + sh + mtpr
 

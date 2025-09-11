@@ -48,3 +48,58 @@
 2025-08-24 17:31:54,807 - INFO - status has been updated to successful
 2025-08-24 17:31:55,724 - INFO - Downloading https://object-store.os-api.cci2.ecmwf.int:443/cci2-prod-cache-2/2025-08-24/16d76c03eba2578404435327583feba8.zip
 2025-08-24 18:32:48,529 - INFO - Tempo total de download: 65.33 minutos
+2025-09-11 11:37:56,704 - INFO - Iniciando o download dos dados do ERA5.
+2025-09-11 11:37:56,730 - INFO - Requisição: reanalysis-era5-single-levels-monthly-means
+2025-09-11 11:37:56,730 - INFO - Variáveis solicitadas: t2m, total_precipitation, mean_evaporation_rate, mean_surface_direct_short_wave_radiation_flux, mean_surface_direct_short_wave_radiation_flux_clear_sky, mean_surface_downward_long_wave_radiation_flux, mean_surface_downward_long_wave_radiation_flux_clear_sky, mean_surface_downward_short_wave_radiation_flux, mean_surface_downward_short_wave_radiation_flux_clear_sky, mean_surface_downward_uv_radiation_flux, mean_surface_latent_heat_flux, mean_surface_net_long_wave_radiation_flux, mean_surface_net_long_wave_radiation_flux_clear_sky, mean_surface_net_short_wave_radiation_flux, mean_surface_net_short_wave_radiation_flux_clear_sky, mean_surface_sensible_heat_flux, mean_top_downward_short_wave_radiation_flux, mean_top_net_long_wave_radiation_flux, mean_top_net_long_wave_radiation_flux_clear_sky, mean_top_net_short_wave_radiation_flux, mean_top_net_short_wave_radiation_flux_clear_sky, mean_total_precipitation_rate, mean_vertically_integrated_moisture_divergence, total_column_water, total_column_water_vapour
+2025-09-11 11:37:56,730 - INFO - Período: 2020, 2021, 2022, 2023, 2024 - 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12
+2025-09-11 11:37:56,730 - INFO - Formato de dados: netcdf
+2025-09-11 11:37:57,864 - INFO - [2024-09-26T00:00:00] Watch our [Forum](https://forum.ecmwf.int/) for Announcements, news and other discussed topics.
+2025-09-11 11:37:58,799 - INFO - Request ID is a4fccedc-9636-4f1e-a090-c10efd3dfef5
+2025-09-11 11:37:59,076 - INFO - status has been updated to accepted
+2025-09-11 11:38:13,922 - INFO - status has been updated to failed
+2025-09-11 11:38:54,404 - INFO - Iniciando o download dos dados do ERA5.
+2025-09-11 11:38:54,404 - INFO - Requisição: reanalysis-era5-single-levels-monthly-means
+2025-09-11 11:38:54,404 - INFO - Variáveis solicitadas: t2m, total_precipitation, mean_evaporation_rate, mean_surface_direct_short_wave_radiation_flux, mean_surface_direct_short_wave_radiation_flux_clear_sky, mean_surface_downward_long_wave_radiation_flux, mean_surface_downward_long_wave_radiation_flux_clear_sky, mean_surface_downward_short_wave_radiation_flux, mean_surface_downward_short_wave_radiation_flux_clear_sky, mean_surface_downward_uv_radiation_flux, mean_surface_latent_heat_flux, mean_surface_net_long_wave_radiation_flux, mean_surface_net_long_wave_radiation_flux_clear_sky, mean_surface_net_short_wave_radiation_flux, mean_surface_net_short_wave_radiation_flux_clear_sky, mean_surface_sensible_heat_flux, mean_top_downward_short_wave_radiation_flux, mean_top_net_long_wave_radiation_flux, mean_top_net_long_wave_radiation_flux_clear_sky, mean_top_net_short_wave_radiation_flux, mean_top_net_short_wave_radiation_flux_clear_sky, mean_total_precipitation_rate, mean_vertically_integrated_moisture_divergence, total_column_water, total_column_water_vapour
+2025-09-11 11:38:54,404 - INFO - Período: 2020, 2021, 2022, 2023, 2024 - 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12
+2025-09-11 11:38:54,404 - INFO - Formato de dados: netcdf
+2025-09-11 11:38:55,521 - INFO - [2024-09-26T00:00:00] Watch our [Forum](https://forum.ecmwf.int/) for Announcements, news and other discussed topics.
+2025-09-11 11:38:56,738 - INFO - Request ID is d41ee95f-aeda-41b2-b95e-5f0edc91bd3e
+2025-09-11 11:38:57,132 - INFO - status has been updated to accepted
+2025-09-11 11:39:12,083 - INFO - status has been updated to failed
+2025-09-11 11:40:05,549 - INFO - Iniciando o download dos dados do ERA5.
+2025-09-11 11:40:05,549 - INFO - Requisição: reanalysis-era5-single-levels-monthly-means
+2025-09-11 11:40:05,549 - INFO - Variáveis solicitadas: 2m_temperature, cloud_base_height, high_cloud_cover, low_cloud_cover, medium_cloud_cover, total_cloud_cover, total_precipitation, mean_evaporation_rate, mean_surface_direct_short_wave_radiation_flux, mean_surface_direct_short_wave_radiation_flux_clear_sky, mean_surface_downward_long_wave_radiation_flux, mean_surface_downward_long_wave_radiation_flux_clear_sky, mean_surface_downward_short_wave_radiation_flux, mean_surface_downward_short_wave_radiation_flux_clear_sky, mean_surface_downward_uv_radiation_flux, mean_surface_latent_heat_flux, mean_surface_net_long_wave_radiation_flux, mean_surface_net_long_wave_radiation_flux_clear_sky, mean_surface_net_short_wave_radiation_flux, mean_surface_net_short_wave_radiation_flux_clear_sky, mean_surface_sensible_heat_flux, mean_top_downward_short_wave_radiation_flux, mean_top_net_long_wave_radiation_flux, mean_top_net_long_wave_radiation_flux_clear_sky, mean_top_net_short_wave_radiation_flux, mean_top_net_short_wave_radiation_flux_clear_sky, mean_total_precipitation_rate, mean_vertically_integrated_moisture_divergence, total_column_water, total_column_water_vapour
+2025-09-11 11:40:05,549 - INFO - Período: 2020, 2021, 2022, 2023, 2024 - 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12
+2025-09-11 11:40:05,549 - INFO - Formato de dados: netcdf
+2025-09-11 11:40:06,364 - INFO - [2024-09-26T00:00:00] Watch our [Forum](https://forum.ecmwf.int/) for Announcements, news and other discussed topics.
+2025-09-11 11:40:07,346 - INFO - Request ID is 8c68f4e1-06ca-4721-a790-121950d3df8c
+2025-09-11 11:40:07,798 - INFO - status has been updated to accepted
+2025-09-11 11:40:17,218 - INFO - status has been updated to running
+2025-09-11 11:40:30,631 - INFO - status has been updated to accepted
+2025-09-11 11:40:42,409 - INFO - status has been updated to running
+2025-09-11 11:44:30,363 - INFO - status has been updated to successful
+2025-09-11 11:44:31,268 - INFO - Downloading https://object-store.os-api.cci2.ecmwf.int:443/cci2-prod-cache-2/2025-09-11/ac4974198fbacb24eb98fc1f6416556f.zip
+2025-09-11 12:37:03,486 - INFO - Tempo total de download: 56.97 minutos
+2025-09-11 12:48:23,487 - INFO - Iniciando o download dos dados do ERA5.
+2025-09-11 12:48:23,487 - INFO - Requisição: reanalysis-era5-single-levels-monthly-means
+2025-09-11 12:48:23,487 - INFO - Variáveis solicitadas: 2m_temperature, cloud_base_height, high_cloud_cover, low_cloud_cover, medium_cloud_cover, total_cloud_cover, total_precipitation, mean_evaporation_rate, mean_surface_direct_short_wave_radiation_flux, mean_surface_direct_short_wave_radiation_flux_clear_sky, mean_surface_downward_long_wave_radiation_flux, mean_surface_downward_long_wave_radiation_flux_clear_sky, mean_surface_downward_short_wave_radiation_flux, mean_surface_downward_short_wave_radiation_flux_clear_sky, mean_surface_downward_uv_radiation_flux, mean_surface_latent_heat_flux, mean_surface_net_long_wave_radiation_flux, mean_surface_net_long_wave_radiation_flux_clear_sky, mean_surface_net_short_wave_radiation_flux, mean_surface_net_short_wave_radiation_flux_clear_sky, mean_surface_sensible_heat_flux, mean_top_downward_short_wave_radiation_flux, mean_top_net_long_wave_radiation_flux, mean_top_net_long_wave_radiation_flux_clear_sky, mean_top_net_short_wave_radiation_flux, mean_top_net_short_wave_radiation_flux_clear_sky, mean_total_precipitation_rate, mean_vertically_integrated_moisture_divergence, total_column_water, total_column_water_vapour
+2025-09-11 12:48:23,487 - INFO - Período: 2020, 2021, 2022, 2023, 2024 - 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12
+2025-09-11 12:48:23,487 - INFO - Formato de dados: netcdf
+2025-09-11 12:48:24,530 - INFO - [2024-09-26T00:00:00] Watch our [Forum](https://forum.ecmwf.int/) for Announcements, news and other discussed topics.
+2025-09-11 12:48:25,703 - INFO - Request ID is d6761c8b-29e4-43bb-95cc-8170e5180feb
+2025-09-11 12:48:25,978 - INFO - status has been updated to accepted
+2025-09-11 12:48:35,381 - INFO - status has been updated to running
+2025-09-11 12:51:21,203 - INFO - status has been updated to successful
+2025-09-11 12:51:21,787 - INFO - Downloading https://object-store.os-api.cci2.ecmwf.int:443/cci2-prod-cache-2/2025-09-11/d736092359d3afd820e35804b8921f68.zip
+2025-09-11 12:56:06,410 - INFO - Iniciando o download dos dados do ERA5.
+2025-09-11 12:56:06,410 - INFO - Requisição: reanalysis-era5-single-levels-monthly-means
+2025-09-11 12:56:06,410 - INFO - Variáveis solicitadas: 2m_temperature, cloud_base_height, high_cloud_cover, low_cloud_cover, medium_cloud_cover, total_cloud_cover, total_precipitation, mean_evaporation_rate, mean_surface_direct_short_wave_radiation_flux, mean_surface_direct_short_wave_radiation_flux_clear_sky, mean_surface_downward_long_wave_radiation_flux, mean_surface_downward_long_wave_radiation_flux_clear_sky, mean_surface_downward_short_wave_radiation_flux, mean_surface_downward_short_wave_radiation_flux_clear_sky, mean_surface_downward_uv_radiation_flux, mean_surface_latent_heat_flux, mean_surface_net_long_wave_radiation_flux, mean_surface_net_long_wave_radiation_flux_clear_sky, mean_surface_net_short_wave_radiation_flux, mean_surface_net_short_wave_radiation_flux_clear_sky, mean_surface_sensible_heat_flux, mean_top_downward_short_wave_radiation_flux, mean_top_net_long_wave_radiation_flux, mean_top_net_long_wave_radiation_flux_clear_sky, mean_top_net_short_wave_radiation_flux, mean_top_net_short_wave_radiation_flux_clear_sky, mean_total_precipitation_rate, mean_vertically_integrated_moisture_divergence, total_column_water, total_column_water_vapour
+2025-09-11 12:56:06,410 - INFO - Período: 2020, 2021, 2022, 2023, 2024 - 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12
+2025-09-11 12:56:06,410 - INFO - Formato de dados: netcdf
+2025-09-11 12:56:07,594 - INFO - [2024-09-26T00:00:00] Watch our [Forum](https://forum.ecmwf.int/) for Announcements, news and other discussed topics.
+2025-09-11 12:56:08,531 - INFO - Request ID is 134f27ef-5c80-4c31-94d4-43cb59bce52a
+2025-09-11 12:56:08,827 - INFO - status has been updated to accepted
+2025-09-11 12:56:24,074 - INFO - status has been updated to running
+2025-09-11 12:58:05,836 - INFO - status has been updated to successful
+2025-09-11 12:58:06,451 - INFO - Downloading https://object-store.os-api.cci2.ecmwf.int:443/cci2-prod-cache-1/2025-09-11/628ce036bd0c48dcca14ee4947181926.zip
+2025-09-11 13:03:03,088 - INFO - Tempo total de download: 6.94 minutos

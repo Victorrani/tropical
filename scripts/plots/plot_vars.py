@@ -12,6 +12,7 @@ from matplotlib.colors import BoundaryNorm, TwoSlopeNorm
 
 
 
+
 DIR_SCRIPT = Path(__file__).resolve().parent
 
 # Raiz do projeto 
@@ -31,15 +32,11 @@ print("Preparando os plots de todas as variáveis do dataset gerado pelo namelis
 
 files = sorted(DIR_DATAIN.glob("*.nc"))
 
-
-from matplotlib.colors import BoundaryNorm, TwoSlopeNorm
-import numpy as np
-
 # configuração específica para cada variável
 var_config = {
     "tp": {
-        "scale": 1000,  # de metros para mm
-        "levels": np.arange(0, 105, 5),
+        "scale": 30000,  # de metros para mm
+        "levels": np.arange(0, 500, 20),
         "norm": lambda lv: BoundaryNorm(lv, ncolors=256),
         "cmap": "turbo",
         "label": "Total precipitation (mm)",
@@ -54,42 +51,42 @@ var_config = {
     },
     "avg_sdirswrf": {
         "scale": 1,
-        "levels": np.arange(0, 1100, 50),
+        "levels": np.arange(0, 400, 25),
         "norm": lambda lv: BoundaryNorm(lv, ncolors=256),
         "cmap": "YlOrRd",
         "label": "Surface direct SW radiation flux (W m⁻²)"
     },
     "avg_sdirswrfcs": {
         "scale": 1,
-        "levels": np.arange(0, 1100, 50),
+        "levels": np.arange(0, 400, 25),
         "norm": lambda lv: BoundaryNorm(lv, ncolors=256),
         "cmap": "YlOrRd",
         "label": "Surface direct SW radiation flux (clear sky) (W m⁻²)"
     },
     "avg_sdlwrf": {
         "scale": 1,
-        "levels": np.arange(0, 600, 20),
+        "levels": np.arange(0, 500, 25),
         "norm": lambda lv: BoundaryNorm(lv, ncolors=256),
         "cmap": "inferno",
         "label": "Downward LW radiation flux (W m⁻²)"
     },
     "avg_sdlwrfcs": {
         "scale": 1,
-        "levels": np.arange(0, 600, 20),
+        "levels": np.arange(0, 500, 25),
         "norm": lambda lv: BoundaryNorm(lv, ncolors=256),
         "cmap": "inferno",
         "label": "Downward LW radiation flux (clear sky) (W m⁻²)"
     },
     "avg_sdswrf": {
         "scale": 1,
-        "levels": np.arange(0, 1100, 50),
+        "levels": np.arange(0, 500, 25),
         "norm": lambda lv: BoundaryNorm(lv, ncolors=256),
         "cmap": "YlOrBr",
         "label": "Downward SW radiation flux (W m⁻²)"
     },
     "avg_sdswrfcs": {
         "scale": 1,
-        "levels": np.arange(0, 1100, 50),
+        "levels": np.arange(0, 500, 25),
         "norm": lambda lv: BoundaryNorm(lv, ncolors=256),
         "cmap": "YlOrBr",
         "label": "Downward SW radiation flux (clear sky) (W m⁻²)"
@@ -145,36 +142,36 @@ var_config = {
     },
     "avg_tdswrf": {
         "scale": 1,
-        "levels": np.arange(0, 1500, 50),
+        "levels": np.arange(0, 500, 25),
         "norm": lambda lv: BoundaryNorm(lv, ncolors=256),
         "cmap": "YlOrBr",
         "label": "Top downward SW radiation flux (W m⁻²)"
     },
     "avg_tnlwrf": {
         "scale": 1,
-        "levels": np.linspace(-300, 300, 25),
-        "norm": lambda lv: TwoSlopeNorm(vmin=-300, vcenter=0, vmax=300),
+        "levels": np.linspace(0, 300, 25),
+        "norm": lambda lv: BoundaryNorm(lv, ncolors=256),
         "cmap": "RdBu_r",
         "label": "Top net LW radiation flux (W m⁻²)"
     },
     "avg_tnlwrfcs": {
         "scale": 1,
         "levels": np.linspace(-300, 300, 25),
-        "norm": lambda lv: TwoSlopeNorm(vmin=-300, vcenter=0, vmax=300),
+        "norm": lambda lv: BoundaryNorm(lv, ncolors=256),
         "cmap": "RdBu_r",
         "label": "Top net LW radiation flux (clear sky) (W m⁻²)"
     },
     "avg_tnswrf": {
         "scale": 1,
-        "levels": np.linspace(-300, 300, 25),
-        "norm": lambda lv: TwoSlopeNorm(vmin=-300, vcenter=0, vmax=300),
+        "levels": np.linspace(0, 300, 25),
+        "norm": lambda lv: BoundaryNorm(lv, ncolors=256),
         "cmap": "RdBu_r",
         "label": "Top net SW radiation flux (W m⁻²)"
     },
     "avg_tnswrfcs": {
         "scale": 1,
-        "levels": np.linspace(-300, 300, 25),
-        "norm": lambda lv: TwoSlopeNorm(vmin=-300, vcenter=0, vmax=300),
+        "levels": np.linspace(0, 300, 25),
+        "norm": lambda lv: BoundaryNorm(lv, ncolors=256),
         "cmap": "RdBu_r",
         "label": "Top net SW radiation flux (clear sky) (W m⁻²)"
     },
@@ -182,17 +179,19 @@ var_config = {
         "scale": 1,
         "levels": np.linspace(0, 0.001, 21),
         "norm": lambda lv: BoundaryNorm(lv, ncolors=256),
-        "cmap": "Blues",
-        "label": "Precipitation rate (kg m⁻² s⁻¹)"
+        "cmap": "turbo",
+        "label": "Precipitation rate (kg m⁻² s⁻¹)",
+        "extend": "max"
     },
     "avg_vimdf": {
         "scale": 1,
-        "levels": np.linspace(-1e-3, 1e-3, 21),
-        "norm": lambda lv: TwoSlopeNorm(vmin=-1e-3, vcenter=0, vmax=1e-3),
+        "levels": np.linspace(-0.5e-3, 0.5e-3, 21),
+        "norm": lambda lv: TwoSlopeNorm(vmin=-0.5e-3, vcenter=0, vmax=0.5e-3),
         "cmap": "BrBG",
         "label": "Vertically-integrated moisture divergence (kg m⁻² s⁻¹)"
     }
 }
+
 
 for file in files:
     print(f"Lendo arquivo: {file}")
@@ -229,10 +228,10 @@ for var in ds.data_vars:
         im = ax.contourf(data['longitude'], data['latitude'], data,
                           transform=ccrs.PlateCarree(), cmap=cmap, levels=levels,
                           norm=norm, extend=extend)
-        cbar = fig.colorbar(im, ax=ax, orientation='vertical', shrink=0.8)
+        cbar = fig.colorbar(im, ax=ax, orientation='horizontal', shrink=0.8)
         cbar.set_label(label)
 
-        ax.set_title(f'{name} - Time: {pd.to_datetime(t).strftime("%Y-%m")}', fontsize=14)
+        ax.set_title(f'{name}\nTime: {pd.to_datetime(t).strftime("%Y-%m")}', fontsize=14)
         ax.coastlines()
         ax.set_xlabel('Longitude')
         ax.set_ylabel('Latitude')
@@ -240,10 +239,11 @@ for var in ds.data_vars:
         ax.add_geometries(shapefile, ccrs.PlateCarree(), edgecolor='black', facecolor='none', linewidth=0.3)
         ax.add_feature(ccrs.cartopy.feature.BORDERS, linestyle=':', linewidth=0.5)
         ax.add_feature(ccrs.cartopy.feature.LAND, facecolor='lightgray')
+        ax.add_feature(ccrs.cartopy.feature.RIVERS, edgecolor='blue', linewidth=0.7)
         gl = ax.gridlines(crs=ccrs.PlateCarree(), color='black',
                   alpha=1.0, linestyle='--', linewidth=0.4,
-                  xlocs=np.arange(-180, 181, 10),  # Ajustar intervalo de longitude conforme necessário
-                  ylocs=np.arange(-90, 90, 10),  # Ajustar intervalo de latitude conforme necessário
+                  xlocs=np.arange(-180, 181, 2.5),  # Ajustar intervalo de longitude conforme necessário
+                  ylocs=np.arange(-90, 90, 2.5),  # Ajustar intervalo de latitude conforme necessário
                draw_labels=True)
         gl.top_labels = False  # Desativar rótulos no topo
         gl.right_labels = False  # Desativar rótulos à direita

@@ -42,7 +42,12 @@ def download_data():
     dataset = "reanalysis-era5-single-levels-monthly-means"
     request = {
         "product_type": ["monthly_averaged_reanalysis"],
-        "variable": [
+        "variable": ["2m_temperature",
+        "cloud_base_height",
+        "high_cloud_cover",
+        "low_cloud_cover",
+        "medium_cloud_cover",
+        "total_cloud_cover",
             "total_precipitation",
             "mean_evaporation_rate",
             "mean_surface_direct_short_wave_radiation_flux",
@@ -72,8 +77,10 @@ def download_data():
         "month": ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"],
         "time": ["00:00"],
         "data_format": "netcdf",
-        "download_format": "unarchived"
+        "download_format": "unarchived",
+        "area": [30, -90, -30, -30]
     }
+
     logging.info(f"Requisição: {dataset}")
     logging.info("Variáveis solicitadas: " + ", ".join(request["variable"]))
     logging.info("Período: " + ", ".join(request["year"]) + " - " + ", ".join(request["month"]))
