@@ -19,7 +19,7 @@ def slice_box():
     DIR_OUT = DIR_ROOT / "datain" / "processed"
     DIR_LOGS = DIR_ROOT / "logs"
     DIR_DATAIN = DIR_ROOT / "datain" / "raw"
-    DIR_FIGS = DIR_ROOT / "dataout" / "figs" / "box"
+    DIR_FIGS = DIR_ROOT / "dataout" 
 
 
 
@@ -27,7 +27,7 @@ def slice_box():
     print("Diretório do script:", DIR_SCRIPT)
     print("Diretório de saída:", DIR_OUT)
 
-    lista_nomes = ['teste', 'teste2', 'teste3']
+    lista_nomes = ['radiation', 'cloudBaseHight', 'clouds']
     arquivos_nc = sorted(DIR_DATAIN.glob("*.nc"))
     for arquivo, nome_curto in zip(arquivos_nc, lista_nomes):
         nome_arquivo = arquivo.stem
@@ -43,8 +43,6 @@ def slice_box():
         for linha in linhas:
             # Criar dicionário {chave: valor}
             dados = dict(item.split("=") for item in linha.split(";"))
-
-
 
         boxes = []
         for linha in linhas:
@@ -63,7 +61,7 @@ def slice_box():
         print(df)
 
         # Salvar em CSV (sem o índice)
-        df.to_csv(DIR_FIGS / "boxes.csv", index=False)
+        #df.to_csv(DIR_FIGS / "boxes.csv", index=False)
         
 
         for b in boxes:
@@ -79,6 +77,7 @@ def slice_box():
 
             output_dir = DIR_OUT / exp_name / name
             output_dir.mkdir(parents=True, exist_ok=True)
+            df.to_csv(output_dir / "boxes.csv", index=False)
 
             ds_box.to_netcdf(output_dir / f"{exp_name}_{nome_curto}_{name}.nc", mode="w", format="NETCDF4")
             print(f"Arquivo {exp_name}_{nome_curto}_{name}.nc salvo com sucesso em {output_dir}")

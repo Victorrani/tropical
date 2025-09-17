@@ -36,13 +36,14 @@ def download_data():
         format='%(asctime)s - %(levelname)s - %(message)s'
     )
 
+
     logging.info("Iniciando o download dos dados do ERA5.")
     #===== 1) Download ERA5 =====
     # Altere o ano e o mês conforme necessário
     dataset = "reanalysis-era5-single-levels-monthly-means"
     request = {
         "product_type": ["monthly_averaged_reanalysis"],
-        "variable": ["2m_temperature",
+        "variable": ["2m_dewpoint_temperature","2m_temperature",
         "cloud_base_height",
         "high_cloud_cover",
         "low_cloud_cover",
@@ -80,6 +81,8 @@ def download_data():
         "download_format": "unarchived",
         "area": [30, -90, -30, -30]
     }
+
+    # [str(y) for y in range(1980, 2024)]  # Exemplo: anos de 1980 a 2024
 
     logging.info(f"Requisição: {dataset}")
     logging.info("Variáveis solicitadas: " + ", ".join(request["variable"]))

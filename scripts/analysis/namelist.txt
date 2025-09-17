@@ -1,6 +1,6 @@
 #longitude -180 | 180 nos limites iniciais do download. aqui será melhorado
-exp_name=EXP1;name=amazonia_E;lat_max=0;lat_min=-5;lon_max=-70;lon_min=-75
-exp_name=EXP1;name=amazonia_W;lat_max=0;lat_min=-5;lon_max=-60;lon_min=-65
+exp_name=EXP1;name=BR_CENTRAL;lat_max=-5;lat_min=-22;lon_max=-45;lon_min=-62.5
+
 
 
 
