@@ -11,7 +11,7 @@ def plot_vars_time_series():
 
     # Diretórios importantes
     DIR_FIGS = DIR_ROOT / "dataout"
-    DIR_BOX = DIR_ROOT / "dataout" / "figs" / "box"
+    DIR_BOX = DIR_ROOT / "dataout" / "tables" 
 
     print("Raiz do projeto:", DIR_ROOT) 
     print("Diretório do script:", DIR_SCRIPT)
