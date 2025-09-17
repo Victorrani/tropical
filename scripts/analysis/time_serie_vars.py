@@ -9,7 +9,7 @@ def time_series_var():
     # Diretórios
     DIR_SCRIPT = Path(__file__).resolve().parent
     DIR_ROOT = DIR_SCRIPT.parent.parent
-    DIR_BOX = DIR_ROOT / "dataout" / "figs" / "box"
+    DIR_BOX = DIR_ROOT / "dataout" / "tables"
 
     # Ler CSV com as caixas
     df_box = pd.read_csv(DIR_BOX / "boxes.csv")
@@ -79,7 +79,10 @@ def time_series_var():
         df_resultado['avg_tnlwrf (W m**-2) (Time-mean top net long-wave radiation flux)'] *= -1
         df_resultado['avg_tnswrf (W m**-2) (Time-mean top net short-wave radiation flux)'] *= -1
         df_resultado['avg_tprate_W (W m**-2) (Time-mean total precipitation rate)'] = df_resultado['avg_tprate (kg m**-2 s**-1) (Time-mean total precipitation rate)'] * 2500000
+        df_resultado['t2m (°C) (2 metre temperature)'] = df_resultado['t2m (K) (2 metre temperature)'] - 273.15
+        df_resultado['d2m (°C) (2 metre dewpoint temperature)'] = df_resultado['d2m (K) (2 metre dewpoint temperature)'] - 273.15
 
+        
         # Balances
         lw_nettop = df_resultado['avg_tnlwrf (W m**-2) (Time-mean top net long-wave radiation flux)']
         sw_nettop = df_resultado['avg_tnswrf (W m**-2) (Time-mean top net short-wave radiation flux)']

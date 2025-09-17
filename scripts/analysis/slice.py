@@ -19,8 +19,8 @@ def slice_box():
     DIR_OUT = DIR_ROOT / "datain" / "processed"
     DIR_LOGS = DIR_ROOT / "logs"
     DIR_DATAIN = DIR_ROOT / "datain" / "raw"
-    DIR_FIGS = DIR_ROOT / "dataout" 
-
+    DIR_FIGS = DIR_ROOT / "dataout" / "tables"
+    DIR_FIGS.mkdir(parents=True, exist_ok=True)
 
 
     print("Raiz do projeto:", DIR_ROOT) 
@@ -61,7 +61,7 @@ def slice_box():
         print(df)
 
         # Salvar em CSV (sem o índice)
-        #df.to_csv(DIR_FIGS / "boxes.csv", index=False)
+        df.to_csv(DIR_FIGS / "boxes.csv", index=False)
         
 
         for b in boxes:
