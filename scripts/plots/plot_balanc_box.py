@@ -22,7 +22,7 @@ def plot_balanc_box():
     DIR_DATAIN = DIR_ROOT / "datain" / "raw"
     DIR_FIGS = DIR_ROOT / "dataout" 
     DIR_SHAPES = DIR_ROOT / "shapefiles" / "BR_UF_2019.shp"
-    DIR_BOX = DIR_ROOT / "dataout" / "figs" / "box"
+    DIR_BOX = DIR_ROOT / "dataout" / "tables" 
 
     print("Raiz do projeto:", DIR_ROOT) 
     print("Diretório do script:", DIR_SCRIPT)
@@ -132,7 +132,7 @@ def plot_balanc_box():
                                      linewidth=2, edgecolor='red', facecolor='none')
                     axj.add_patch(rect)
             # Salvando as figuras em diretórios específicos para cada arquivo lido
-            outdir = DIR_FIGS / "balanc"
+            outdir = DIR_FIGS / exp_name / name /"balanc"
             outdir.mkdir(parents=True, exist_ok=True)
             fig.savefig(outdir / f'balanc_{t}_box.jpg', dpi=300, bbox_inches='tight')
             plt.close(fig)
