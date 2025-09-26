@@ -46,17 +46,29 @@ def plot_desv():
 
 # Extrair o mês para agrupar
             df['mes'] = df['time'].dt.month
+            df['ano'] = df['time'].dt.year
 
+            print(df['ano'])
+
+            quit()
             # Calcular a média por mês (agrupa todos os janeiros, fevereiros, etc.)
             media_climatologica_mensal = df.groupby('mes').mean(numeric_only=True)
+            media_climatologica_mensal_80_95 = df[(df['ano'] >= 1980) & (df['ano'] <= 1995)].groupby('mes').mean(numeric_only=True)
+            media_climatologica_mensal_96_04 = df[(df['ano'] >= 1996) & (df['ano'] <= 2004)].groupby('mes').mean(numeric_only=True)
+            media_climatologica_mensal_05_15 = df[(df['ano'] >= 2005) & (df['ano'] <= 2015)].groupby('mes').mean(numeric_only=True)
+            media_climatologica_mensal_16_24 = df[(df['ano'] >= 2016) & (df['ano'] <= 2024)].groupby('mes').mean(numeric_only=True)
 
-            print("Média Climatológica Mensal:")
-            print(media_climatologica_mensal)
+
+
 
             # salva CSV
             out_clim = DIR_CSV / f"{exp_name}_{name}_clima.csv"
             media_climatologica_mensal.to_csv(out_clim)
-            print(f"Climatologia mensal salva em: {out_clim}")
+            media_climatologica_mensal_80_95.to_csv(DIR_CSV / f"{exp_name}_{name}_clima_80_95.csv")
+            media_climatologica_mensal_96_04.to_csv(DIR_CSV / f"{exp_name}_{name}_clima_96_04.csv")
+            media_climatologica_mensal_05_15.to_csv(DIR_CSV / f"{exp_name}_{name}_clima_05_15.csv")
+            media_climatologica_mensal_16_24.to_csv(DIR_CSV / f"{exp_name}_{name}_clima_16_24.csv") 
+            print(f"Climatologias salvas em: {out_clim}")
 
             
             

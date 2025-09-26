@@ -29,46 +29,60 @@ def time_series_var():
             print(f"Atenção: nenhum arquivo encontrado em {DIR_DATAIN}")
             continue
 
-        # Lista para armazenar os DataFrames individuais
-        dfs = []
+        df_all = None  # acumulador
 
-        # Processa cada arquivo NetCDF
         for file in files:
             print(f"Lendo arquivo: {file}")
             ds = xr.open_dataset(file)
 
-            # Renomear dimensão 'valid_time' para 'time', se existir
             if "valid_time" in ds.dims:
                 ds = ds.rename({"valid_time": "time"})
 
-            nome_file = file.stem
-            print(f"  Nome do arquivo: {nome_file}")
-
-            # Calcular médias espaciais de todas as variáveis
+            # médias espaciais
             medias = {}
             for var in ds.data_vars:
                 unidade = getattr(ds[var], "units", "unknown")
-                nome_completa = getattr(ds[var], "long_name", var)
-                nome_coluna = f"{var} ({unidade}) ({nome_completa})"
-                print(f"  Processando variável: {var} -> coluna: {nome_coluna}")
+                lname   = getattr(ds[var], "long_name", var)
+                colname = f"{var} ({unidade}) ({lname})"
+                
+                dims_media = [d for d in ds[var].dims if d != "time"]
+                try:
+                    medias[colname] = ds[var].mean(dim=dims_media)
+                except ValueError:
+                    medias[colname] = ds[var]
 
-                dims_para_media = [d for d in ds[var].dims if d != 'time']
-                medias[nome_coluna] = ds[var].mean(dim=dims_para_media)
-
-            # Converte para DataFrame
             df_medias = xr.Dataset(medias).to_dataframe().reset_index()
-            df_medias["arquivo"] = nome_file
-
-            # Adiciona ao lista de DataFrames
-            dfs.append(df_medias)
-
             ds.close()
 
-        # Concatena todos os DataFrames deste box
-        df_resultado = pd.concat(dfs, ignore_index=True)
+            if "time" not in df_medias.columns:
+                continue
+            
+            df_medias["time"] = pd.to_datetime(df_medias["time"])
 
+            # normalizar por mês (ou o que você estiver usando)
+            df_medias["time"] = df_medias["time"].dt.to_period("M").dt.to_timestamp()
+
+
+            # agregação (se houver mais de um registro no mesmo mês)
+            df_medias = df_medias.groupby("time", as_index=True).mean(numeric_only=True)
+            
+
+            # resolver QUALQUER outra sobreposição de nomes antes do join
+            if df_all is not None:
+                overlap = df_all.columns.intersection(df_medias.columns)
+                if len(overlap) > 0:
+                    # mantemos o que já está em df_all e descartamos duplicatas do novo
+                    df_medias = df_medias.drop(columns=list(overlap))
+
+            # join por mês
+            if df_all is None:
+                df_all = df_medias
+            else:
+                df_all = df_all.join(df_medias, how="outer")
+
+            df_resultado = df_all.sort_index().reset_index()
         # Remove colunas que podem não existir
-        df_resultado = df_resultado.drop(columns=["number", "expver", "arquivo"], errors="ignore")
+        df_resultado = df_resultado.drop(columns=["number"], errors="ignore")
 
         # Trabalhando nas unidades e sinais das variáveis (exemplo: tp em mm)
         df_resultado['tp_mm (mm) (Total precipitation)'] = df_resultado['tp (m) (Total precipitation)'] * 1000 * 30
@@ -96,6 +110,7 @@ def time_series_var():
         df_resultado['balanc_atmos (W m**-2) (atmospheric_balance)'] = (-1)*(sw_nettop - sw_netsrf) + (-1)*(lw_nettop - lw_netsrf) + sh + mtpr
         df_resultado['balanc_surface (W m**-2) (surface_balance)'] = (-1)*(sw_netsrf + lw_netsrf) - sh - lh
 
+        print(df_resultado.columns)
         # Salvar CSV
         out_csv = DIR_ROOT / "dataout" / "tables" / exp_name /f"time_series_{exp_name}_{name}.csv"
         out_csv.parent.mkdir(parents=True, exist_ok=True)
