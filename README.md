@@ -132,5 +132,38 @@ Os resultados ficarão no diretório dataout/ separados por experimento e nome
 
 <img width="1166" height="241" alt="image" src="https://github.com/user-attachments/assets/31a7b471-d3b3-488b-9c41-e57f79191692" />
 
+<img width="1169" height="385" alt="image" src="https://github.com/user-attachments/assets/de03d6b7-88c7-460a-acd3-227c806545e5" />
+
+
+## Gerando a climatologia e desvios da média
+
+No diretório script/analysis há um script chamado climatologia.py. Caso tenha sido necessário alterar o período analisado a climatologia pode ficar ruim. O script foi pensado para utilizar a série de 1980 até 2024.
+Rode esse script para gerar as tabelas com as médias dos períodos pré definidos. Os resultados estão em dataout/tables
+```
+python scripts/analysis/climatologia.py
+```
+
+Para calcular os desvios da média utilize o script desv.py 
+```
+python scripts/analysis/desv.py
+```
+Importante: Rode os scripts nessa ordem. Podem ocorrer erros se feitos em ordem errada.
+
+Para plotar os resultados comparativos da climatologia e do desvio da média, vá para o diretório scripts/plots
+
+```
+python scripts/plots/plot_desv.py
+```
+<img width="1148" height="375" alt="image" src="https://github.com/user-attachments/assets/69b42bce-90c6-414c-b623-4f200c3d46ac" />
+
+```
+python scripts/plots/plot_medias_mensais.py
+```
+Para esse script é necessário copiar e colar o nome completo. Veja o exemplo a seguir:
+
+<img width="1031" height="274" alt="image" src="https://github.com/user-attachments/assets/212a7798-c476-43af-8560-008d458bfd57" />
+
+
+<img width="1146" height="382" alt="image" src="https://github.com/user-attachments/assets/c17fe35c-3014-4a85-8aa1-3cc8a69bfff1" />
 
 
