@@ -1,51 +1,56 @@
-Projeto da disciplina Meteorologia Tropical IAG-USP
+# Projeto: Balanços de Radiação em Domínios Específicos
 
-Autor: Victor Antunes Ranieri 
+**Disciplina:** Meteorologia Tropical - IAG/USP  
+**Autor:** Victor Antunes Ranieri  
+**Data:** [2025-12-22]
 
-Objetivos: Trabalhar com balanços de radiação para domínios específicos
+## 📋 Objetivo
+Processar, analisar e visualizar balanços de radiação atmosférica para regiões específicas (boxes), 
+utilizando dados de reanálise ERA5.
 
-Estrutura de diretórios:
-
+## 🗂️ Estrutura de Diretórios
+```
 ├── datain/               # Dados de entrada (input)
-│   ├── processed/        # Subconjuntos processados (regiões/temporalidades específicas)
-│   └── raw/              # Dados brutos completos (originais, imutáveis)
+│   ├── processed/        # Subconjuntos processados (regiões/temporalidades específicas)
+│   └── raw/              # Dados brutos completos (originais, imutáveis)
 │
 ├── dataout/              # Resultados e saídas (output)
-│   └── tables/           # Tabelas geradas a partir das análises
+│   └── tables/           # Tabelas geradas a partir das análises
 │
 ├── env/                  # Configuração do ambiente virtual/conda
-│   └── environment.yml   # Especificação das dependências do projeto
+│   └── environment.yml   # Especificação das dependências do projeto
 │
 ├── logs/                 # Registros de execução (logs)
-│   └── download.log      # Exemplo: log específico do download
+│   └── download.log      # Exemplo: log específico do download
 │
 ├── notebooks/            # Jupyter notebooks para exploração e análise interativa
 │
 ├── README.md             # Documentação principal do projeto
 │
 ├── scripts/              # Códigos Python reutilizáveis
-│   ├── analysis/         # Processamento e cálculos estatísticos
-│   │   ├── box_maps.py      # Geração de mapas por região/box
-│   │   ├── climatologia.py  # Cálculo de climatologias
-│   │   ├── desv.py          # Cálculo de desvios/anomalias
-│   │   ├── namelist.txt     # Configurações/parâmetros para análises
-│   │   ├── slice.py         # Extração de subconjuntos espaciais/temporais
-│   │   └── time_serie_vars.py # Geração de séries temporais
-│   │
-│   ├── download/         # Obtenção de dados de fontes externas
-│   │   └── get_data.py   # Script principal de download
-│   │
-│   └── plots/            # Visualizações e gráficos
-│       ├── nome_variavel.py        # Plots específicos por variável
-│       ├── plot_balanc_box.py      # Balanços por região
-│       ├── plot_balanc.py          # Gráficos de balanço geral
-│       ├── plot_desv.py            # Visualização de desvios/anomalias
-│       ├── plot_medias_mensais.py  # Médias mensais
-│       ├── plot_vars.py            # Plots genéricos de variáveis
-│       └── plot_vars_time_series.py # Séries temporais gráficas
+│   ├── analysis/         # Processamento e cálculos estatísticos
+│   │   ├── box_maps.py      # Geração de mapas por região/box
+│   │   ├── climatologia.py  # Cálculo de climatologias
+│   │   ├── desv.py          # Cálculo de desvios/anomalias
+│   │   ├── namelist.txt     # Configurações/parâmetros para análises
+│   │   ├── slice.py         # Extração de subconjuntos espaciais/temporais
+│   │   └── time_serie_vars.py # Geração de séries temporais
+│   │
+│   ├── download/         # Obtenção de dados de fontes externas
+│   │   └── get_data.py   # Script principal de download
+│   │
+│   └── plots/            # Visualizações e gráficos
+│       ├── nome_variavel.py        # Plots específicos por variável
+│       ├── plot_balanc_box.py      # Balanços por região
+│       ├── plot_balanc.py          # Gráficos de balanço geral
+│       ├── plot_desv.py            # Visualização de desvios/anomalias
+│       ├── plot_medias_mensais.py  # Médias mensais
+│       ├── plot_vars.py            # Plots genéricos de variáveis
+│       └── plot_vars_time_series.py # Séries temporais gráficas
 │
 └── shapefiles/           # Arquivos geoespaciais (formato Shapefile)
+├── continentes.shp # Delimitação continental
+└── regioes.shp # Regiões de estudo específicas
+```
 
-
-
-
+## Instrução para uso
