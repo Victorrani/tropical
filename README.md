@@ -234,6 +234,6 @@ Desenvolver plots espaciais
 Melhorias nas unidades de cada variável e escala dos gráficos
 Criação de arquivos de log para outros processos de analises e plots.
 
-## Dúvias?? 
+## Dúvidas?? 
 Entre em contato comigo pelos emails victor.ranieri@usp.br ou victor.ranieri90@gmail.com 
 
