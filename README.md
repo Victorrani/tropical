@@ -69,3 +69,19 @@ conda env create -f environment.yml
 ```
 conda activate tropical-env
 ```
+## Download dos dados
+1. Antes de executar o script, é necessário instalar a biblioteca cdsapi e configurar sua chave de API do CDS. Para instruções detalhadas de configuração, consulte o guia oficial e a documentação do usuário: https://cds.climate.copernicus.eu/how-to-api
+2. Entre no diretório scripts/download você encontrará o script python get_data.py
+```
+python get_data.py
+```
+<img width="1360" height="276" alt="image" src="https://github.com/user-attachments/assets/ed786152-6813-4df2-9703-1ca78b0c767d" />
+
+Antes de executar o script, é necessário instalar a biblioteca cdsapi e configurar sua chave de API do CDS. Para instruções detalhadas de configuração, consulte o guia oficial e a documentação do usuário: https://cds.climate.copernicus.eu/how-to-api
+Pode acontece de aparecer o erro “Your request is too large, please reduce your selection” dessa, forma você deverá fazer o download alterando o dimínio temporal e espacial do dado. Use um editor de texto para alterar o trecho a seguir do código
+<img width="783" height="154" alt="image" src="https://github.com/user-attachments/assets/a9e80744-9d19-4bb4-95fd-1f9e222e9fa6" />
+Após o final do download deverá ser encontrado no diretório datain/raw três arquivos no formato netCDF. Não altere o nome desses arquivos.
+<img width="963" height="40" alt="image" src="https://github.com/user-attachments/assets/13c3589c-15ec-4e25-9d3f-cbda028f5853" />
+
+
+## Seleção dos domínios
