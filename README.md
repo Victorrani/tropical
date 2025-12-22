@@ -53,4 +53,19 @@ utilizando dados de reanálise ERA5.
 └── regioes.shp # Regiões de estudo específicas
 ```
 
-## Instrução para uso
+## Instruçôes para uso
+
+1. Faça o clone do repositório https://github.com/Victorrani/tropical.git
+```
+git clone https://github.com/Victorrani/tropical.git
+```
+2. Entre no diretório env para criar o ambiente conda estável
+```
+cd env
+```
+```
+conda env create -f environment.yml
+```
+```
+conda activate tropical-env
+```
