@@ -1,4 +1,4 @@
-name: tropical
+name: tropical-env
 channels:
   - conda-forge
   - defaults

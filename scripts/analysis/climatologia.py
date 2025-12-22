@@ -50,7 +50,7 @@ def plot_desv():
 
             print(df['ano'])
 
-            quit()
+            
             # Calcular a média por mês (agrupa todos os janeiros, fevereiros, etc.)
             media_climatologica_mensal = df.groupby('mes').mean(numeric_only=True)
             media_climatologica_mensal_80_95 = df[(df['ano'] >= 1980) & (df['ano'] <= 1995)].groupby('mes').mean(numeric_only=True)

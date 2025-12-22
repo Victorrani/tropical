@@ -89,24 +89,28 @@ def plot_medias():
 
         variavel = df.columns
         print(variavel)
-        var_name = input(str('Escolha a varíavel ara plotar: '))
-        nome_var = var_name.strip().split()[2] if var_name.strip() else ""
-        unidade = var_name.strip().split()[1] if var_name.strip() else ""
-        print(nome_var)
-        
-        print(f'Variavel escolhida: {var_name}')
+        var_name = input(str('Escolha a varíavel para plotar: '))
+        unidade = var_name.split('(')[1].split(')')[0]  # 'W m**-2'
+
+# Extrai nome descritivo (entre segundo e terceiro parênteses)
+        nome_var = var_name.split('(')[2].split(')')[0]  # 'earth_balance'
+
+        print(f'Variavel: {var_name}')
+        print(f'Nome: {nome_var}')
+        print(f'Unidade: {unidade}')
 
         fig, ax = plt.subplots(figsize=(20, 6))
-        ax.plot(df[var_name], marker='o')
-        ax.plot(df1[var_name], marker='x')
-        ax.plot(df2[var_name], marker='d')
-        ax.plot(df3[var_name], marker='x')
-        ax.plot(df4[var_name], marker='o')
+        ax.plot(df[var_name], marker='o', label='Série total')
+        ax.plot(df1[var_name], marker='x', label='1980–1995')
+        ax.plot(df2[var_name], marker='d', label='1996–2004')
+        ax.plot(df3[var_name], marker='x', label='2005–2015')
+        ax.plot(df4[var_name], marker='o', label='2016–2024')
 
         ax.set_title(f'Time Series of {nome_var}')
         ax.set_xlabel('Mês')
         ax.set_ylabel(unidade)
         ax.grid(True)
+        ax.legend()
         
         outdir = DIR_FIGS / exp_name / name / "clima"
         outdir.mkdir(parents=True, exist_ok=True)

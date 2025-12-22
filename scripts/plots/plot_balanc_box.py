@@ -132,7 +132,7 @@ def plot_balanc_box():
                                      linewidth=2, edgecolor='red', facecolor='none')
                     axj.add_patch(rect)
             # Salvando as figuras em diretórios específicos para cada arquivo lido
-            outdir = DIR_FIGS / exp_name / name /"balanc"
+            outdir = DIR_FIGS / "balanc"
             outdir.mkdir(parents=True, exist_ok=True)
             fig.savefig(outdir / f'balanc_{t}_box.jpg', dpi=300, bbox_inches='tight')
             plt.close(fig)

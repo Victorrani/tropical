@@ -1,5 +1,6 @@
-#longitude -180 | 180 nos limites iniciais do download. aqui será melhorado
-exp_name=EXP1;name=k67;lat_max=-1;lat_min=-4.5;lon_max=-53.5;lon_min=-56.5
+#longitude -180 | 180 Evite utilizar espaços em branco
+exp_name=EXP1;name=teste1;lat_max=-1;lat_min=-4.5;lon_max=-53.5;lon_min=-56.5
+exp_name=EXP2;name=teste2;lat_max=-5;lat_min=-10;lon_max=-50;lon_min=-55
 
 
 
