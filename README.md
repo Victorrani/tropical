@@ -113,6 +113,19 @@ O arquivo boxes.csv contém a descrição da localização da região selecionad
 
 ## Produzindo resultados
 
+## 📈 Equações de Balanço
+
+### 🌍 Balanço Global (TOA)
+**TOA = -(Radiação Solar Líquida + Radiação Térmica Líquida)**
+
+### 🌡️ Balanço na Superfície  
+**Superfície = -(Rad. Solar + Rad. Térmica) - Calor Sensível - Calor Latente**
+
+### ☁️ Balanço Atmosférico
+**Atmosfera = -(Variação de Radiação) + Calor Sensível + Calor Latente da Precipitação**
+
+
+
 1. No diretório script/analysis há um script chamado time_serie_vars.py. Ele será o responsável por extrair as informações de todos os arquivos netCDF e transforma-los em tabelas. Isso é feito para cada experimento separadamente.
 ```
 python scripts/analysis/time_serie_vars.py
@@ -166,4 +179,61 @@ Para esse script é necessário copiar e colar o nome completo. Veja o exemplo a
 
 <img width="1146" height="382" alt="image" src="https://github.com/user-attachments/assets/c17fe35c-3014-4a85-8aa1-3cc8a69bfff1" />
 
+Como dito anteriormente, esse código foi pensado para uma série longa de 1980 até 2024. Caso seu dado for menor que esse período, algumas series mensais podem não aparecer.
+
+## Variáveis. Nome no arquivo, unidade e nome completo:
+```
+'cbh (m) (Cloud base height)',
+'d2m (K) (2 metre dewpoint temperature)',
+'t2m (K) (2 metre temperature)', 'hcc ((0 - 1)) (High cloud cover)',
+'lcc ((0 - 1)) (Low cloud cover)', 'mcc ((0 - 1)) (Medium cloud cover)',
+'tcc ((0 - 1)) (Total cloud cover)',
+'tcw (kg m**-2) (Total column water)',
+'tcwv (kg m**-2) (Total column vertically-integrated water vapour)',
+'tp (m) (Total precipitation)',
+'avg_ie (kg m**-2 s**-1) (Time-mean moisture flux)',
+'avg_sdirswrf (W m**-2) (Time-mean surface direct short-wave radiation flux)',
+'avg_sdirswrfcs (W m**-2) (Time-mean surface direct short-wave radiation flux, clear sky)',
+'avg_sdlwrf (W m**-2) (Time-mean surface downward long-wave radiation flux)',
+'avg_sdlwrfcs (W m**-2) (Time-mean surface downward long-wave radiation flux, clear sky)',
+'avg_sdswrf (W m**-2) (Time-mean surface downward short-wave radiation flux)',
+'avg_sdswrfcs (W m**-2) (Time-mean surface downward short-wave radiation flux, clear sky)',
+'avg_sduvrf (W m**-2) (Time-mean surface downward UV radiation flux)',
+'avg_slhtf (W m**-2) (Time-mean surface latent heat flux)',
+'avg_snlwrf (W m**-2) (Time-mean surface net long-wave radiation flux)',
+'avg_snlwrfcs (W m**-2) (Time-mean surface net long-wave radiation flux, clear sky)',
+'avg_snswrf (W m**-2) (Time-mean surface net short-wave radiation flux)',
+'avg_snswrfcs (W m**-2) (Time-mean surface net short-wave radiation flux, clear sky)',
+'avg_ishf (W m**-2) (Time-mean surface sensible heat flux)',
+'avg_tdswrf (W m**-2) (Time mean top downward short-wave radiation flux)',
+'avg_tnlwrf (W m**-2) (Time-mean top net long-wave radiation flux)',
+'avg_tnlwrfcs (W m**-2) (Time-mean top net long-wave radiation flux, clear sky)',
+'avg_tnswrf (W m**-2) (Time-mean top net short-wave radiation flux)',
+'avg_tnswrfcs (W m**-2) (Time-mean top net short-wave radiation flux, clear sky)',
+'avg_tprate (kg m**-2 s**-1) (Time-mean total precipitation rate)',
+'avg_vimdf (kg m**-2 s**-1) (Time-mean total column vertically-integrated moisture divergence flux)',
+'tp_mm (mm) (Total precipitation)',
+'avg_tprate_W (W m**-2) (Time-mean total precipitation rate)',
+'t2m (°C) (2 metre temperature)',
+'d2m (°C) (2 metre dewpoint temperature)',
+'balanc_earth (W m**-2) (earth_balance)',
+'balanc_atmos (W m**-2) (atmospheric_balance)',
+'balanc_surface (W m**-2) (surface_balance)'
+```
+
+## O que ainda está em desenvolvimento? 
+
+Ainda está em fase de implementação os plots espaciais onde será possível ver a região delimitada pelo arquivo original e as regiões selecionadas pelo usuário para todas as variáveis, balanços e passos de tempo. Essa aplicação não está 100% boa, evite usar. Caso queira utilizar fazer mapas, utilize os dados recortados ou o dado bruto junto com a delimitação das caixas que estão no diretório /tables.
+
+<img width="963" height="345" alt="image" src="https://github.com/user-attachments/assets/ed6b5b11-94bf-4896-a98f-04ea5883ff73" />
+Exemplo do que está sendo produzido. Balanços atmosféricos, terrestre e superfície para cada passo de tmepo.
+
+## Próximos passos: 
+
+Desenvolver plots espaciais
+Melhorias nas unidades de cada variável e escala dos gráficos
+Criação de arquivos de log para outros processos de analises e plots.
+
+## Dúvias?? 
+Entre em contato comigo pelos emails victor.ranieri@usp.br ou victor.ranieri90@gmail.com 
 
