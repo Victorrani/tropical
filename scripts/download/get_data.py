@@ -74,15 +74,15 @@ def download_data():
             "total_column_water",
             "total_column_water_vapour"
         ],
-        "year": ["2020", "2021", "2022", "2023", "2024"],
+        "year": [str(year) for year in range (2023, 2025)],
         "month": ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"],
         "time": ["00:00"],
         "data_format": "netcdf",
         "download_format": "unarchived",
-        "area": [30, -90, -30, -30]
+        "area": [20, -90, -20, -40]
     }
 
-    # [str(y) for y in range(1980, 2024)]  # Exemplo: anos de 1980 a 2024
+    # [str(y) for y in range(2022, 2025)]  # Exemplo: anos de 1980 a 2024
 
     logging.info(f"Requisição: {dataset}")
     logging.info("Variáveis solicitadas: " + ", ".join(request["variable"]))

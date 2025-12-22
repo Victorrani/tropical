@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import re
 
-
 def plot_vars_time_series():
 
     # Dicionário de limites para cada variável

@@ -1,5 +1,5 @@
 #longitude -180 | 180 nos limites iniciais do download. aqui será melhorado
-exp_name=EXP1;name=BR_CENTRAL2;lat_max=-5;lat_min=-22;lon_max=-40;lon_min=-62.5
+exp_name=EXP1;name=k67;lat_max=-1;lat_min=-4.5;lon_max=-53.5;lon_min=-56.5
 
 
 
