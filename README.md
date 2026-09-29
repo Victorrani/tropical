@@ -2,6 +2,7 @@
 
 **Disciplina:** Meteorologia Tropical - IAG/USP
 **Autor:** Victor Antunes Ranieri
+**Professor:** Pedro Leite da Silva Dias
 **Data:** 2025-12-22 (reorganizado em 2026-09)
 
 ## 📋 Objetivo
