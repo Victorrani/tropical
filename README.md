@@ -173,18 +173,8 @@ usa só o continente (`superficie=terra`).
 ### Balanços de energia no domínio total (janeiro de 2024)
 ![Mapas dos balanços da Terra, da atmosfera e da superfície em janeiro de 2024](docs/img/balanco_2024-01.jpg)
 
-No verão austral, o topo da atmosfera ganha energia no Hemisfério Sul e perde no Norte. O
-balanço atmosférico destaca a ZCIT e a faixa diagonal da Zona de Convergência do Atlântico Sul
-(ZCAS), da Amazônia ao Atlântico Sudeste, onde o calor latente liberado pela chuva aquece a
-atmosfera. Na superfície, continente e oceano têm escalas próprias: o continente fica perto de
-zero, enquanto o Atlântico Sul acumula calor (laranja) e o Atlântico Norte perde (teal).
-
 ### Anomalia de chuva no oeste da Amazônia
 ![Anomalias mensais de precipitação no oeste da Amazônia, 2015–2025](docs/img/anomalia_chuva_amazonia_oeste.jpg)
-
-A seca de 2023–2024 aparece como a mais longa sequência negativa da série: a média móvel de
-12 meses chega a cerca de −50 mm/mês, com outubro de 2023 em −124 mm. Pela tabela de
-anomalias, a temperatura média de 2024 no box ficou 1,0 °C acima da normal.
 
 ### Mapas de um box: oeste da Amazônia, outubro de 2021 x outubro de 2023
 Exemplo dos mapas gerados para cada box (`plot_balanc.py`), comparando um outubro chuvoso
@@ -200,46 +190,14 @@ Exemplo dos mapas gerados para cada box (`plot_balanc.py`), comparando um outubr
 | Calor latente (W m⁻², para cima) | 122 | 109 | 121 |
 | Temperatura a 2 m (°C) | 26,6 | **28,2** | 26,3 |
 
-Na seca, quase não há calor latente liberado pela chuva e o balanço atmosférico cai de ~130
-para 30 W m⁻² (painel do meio, bem mais claro). Com o solo mais seco, parte da energia que iria
-para a evaporação passa a aquecer o ar: o calor sensível quase dobra e a temperatura fica
-~2 °C acima da normal. O balanço de superfície (à direita), perto de zero em 2021, fica
-positivo em 2023 (~4 W m⁻²): o solo seco passa a acumular calor.
-
 ### Anomalia de chuva no Sul
 ![Anomalias mensais de precipitação no box sul, 2015–2025](docs/img/anomalia_chuva_sul.jpg)
-
-A média móvel de 12 meses (linha preta) separa três fases:
-- **El Niño 2015–2016** (set/2015–abr/2016): média móvel positiva, com o maior excesso da série
-  em dezembro de 2015 (+123 mm);
-- **período seco de meados de 2019 a meados de 2023**, que inclui a La Niña de 2020–2023: a
-  média móvel fica negativa o tempo todo e chega a −48 mm/mês em 2021;
-- **El Niño 2023–2024** (set/2023–mai/2024): volta a ficar positiva, com setembro (+77 mm) e
-  novembro de 2023 (+112 mm) e as chuvas de abril e maio de 2024 (+85 e +67 mm), período das
-  enchentes no RS.
-
-As enchentes de 2024 aparecem **diluídas pelo tamanho do box**: em maio de 2024 choveu 331 mm
-no centro-norte do RS, mas 186 mm na média do box 10° × 10° (normal de maio: 119 mm). Boxes
-menores isolam melhor eventos regionais.
 
 ### Ciclo anual da chuva em São Paulo
 ![Ciclo anual de precipitação em São Paulo: normal 1991–2020, décadas de 1991 a 2025 e série 2015–2025](docs/img/ciclo_anual_chuva_sao_paulo.jpg)
 
-O gráfico mostra a normal 1991–2020 (tracejado), o ciclo anual de cada década e o da série
-analisada (preto). Na estação chuvosa as décadas aparecem em ordem: 1991–2000 foi a mais
-chuvosa e 2021–2025 a mais seca. A série 2015–2025 ficou abaixo da normal em quase todos os
-meses, principalmente em janeiro, março, setembro e dezembro (cerca de 30 mm a menos por mês).
-Pela tabela de anomalias (`anomalias_EXP2_sao_paulo.csv`), o box teve déficit de chuva em todos
-os anos desde 2017.
-
 ### Temperatura no leste da Amazônia
 ![Série de temperatura a 2 m no leste da Amazônia com a normal 1991–2020](docs/img/temperatura_amazonia_leste.jpg)
-
-A temperatura mensal (azul) fica acima da normal (tracejado) nos eventos de El Niño de
-2015–2016 e 2023–2024; a média móvel de 12 meses chega a quase 1 °C acima da média do período.
-
-> O eixo y das séries tem a mesma amplitude em todos os boxes (para comparar a variabilidade
-> entre regiões), centrada nos dados de cada box.
 
 ## ⏱️ Tempo estimado
 Tempos medidos em um computador pessoal (7 GB de RAM) com 24 variáveis. Os downloads dependem
