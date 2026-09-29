@@ -1,113 +1,68 @@
-import pandas as pd
-import xarray as xr
-import matplotlib.pyplot as plt
+import sys
 from pathlib import Path
-import re
+
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import common as cm
+
 
 def plot_desv():
+    """Anomalias mensais de cada variável de cada box: barras (vermelho > 0,
+    azul < 0) e média móvel de 12 meses.
 
-    # Dicionário de limites para cada variável
-    limits_dict = {
-        'cbh (m) (Cloud base height)': [-1000, 1000],
-        'd2m (K) (2 metre dewpoint temperature)': [-5, 5],
-        't2m (K) (2 metre temperature)': [-5, 5],
-        'hcc ((0 - 1)) (High cloud cover)': [-0.2, 0.2],
-        'lcc ((0 - 1)) (Low cloud cover)': [-0.2, 0.2],
-        'mcc ((0 - 1)) (Medium cloud cover)': [-0.2, 0.2],
-        'tcc ((0 - 1)) (Total cloud cover)': [-0.2, 0.2],
-        'tcw (kg m**-2) (Total column water)': [-15, 15],
-        'tcwv (kg m**-2) (Total column vertically-integrated water vapour)': [-15, 15],
-        'tp (m) (Total precipitation)': [-0.01, 0.01],
-        'avg_ie (kg m**-2 s**-1) (Time-mean moisture flux)': [-1e-4, 1e-4],
-        'avg_sdirswrf (W m**-2) (Time-mean surface direct short-wave radiation flux)': [-50, 50],
-        'avg_sdirswrfcs (W m**-2) (Time-mean surface direct short-wave radiation flux, clear sky)': [-5, 5],
-        'avg_sdlwrf (W m**-2) (Time-mean surface downward long-wave radiation flux)': [-25, 25],
-        'avg_sdlwrfcs (W m**-2) (Time-mean surface downward long-wave radiation flux, clear sky)': [-25, 25],
-        'avg_sdswrf (W m**-2) (Time-mean surface downward short-wave radiation flux)': [-50, 50],
-        'avg_sdswrfcs (W m**-2) (Time-mean surface downward short-wave radiation flux, clear sky)': [-10, 10],
-        'avg_sduvrf (W m**-2) (Time-mean surface downward UV radiation flux)': [-10, 10],
-        'avg_slhtf (W m**-2) (Time-mean surface latent heat flux)': [-20, 20],
-        'avg_snlwrf (W m**-2) (Time-mean surface net long-wave radiation flux)': [-20, 20],
-        'avg_snlwrfcs (W m**-2) (Time-mean surface net long-wave radiation flux, clear sky)': [-20, 20],
-        'avg_snswrf (W m**-2) (Time-mean surface net short-wave radiation flux)': [-30, 30],
-        'avg_snswrfcs (W m**-2) (Time-mean surface net short-wave radiation flux, clear sky)': [-10, 10],
-        'avg_ishf (W m**-2) (Time-mean surface sensible heat flux)': [-30, 30],
-        'avg_tdswrf (W m**-2) (Time mean top downward short-wave radiation flux)': [-2.5, 2.5],
-        'avg_tnlwrf (W m**-2) (Time-mean top net long-wave radiation flux)': [-20, 20],
-        'avg_tnlwrfcs (W m**-2) (Time-mean top net long-wave radiation flux, clear sky)': [-10, 10],
-        'avg_tnswrf (W m**-2) (Time-mean top net short-wave radiation flux)': [-30, 30],
-        'avg_tnswrfcs (W m**-2) (Time-mean top net short-wave radiation flux, clear sky)': [-5, 5],
-        'avg_tprate (kg m**-2 s**-1) (Time-mean total precipitation rate)': [-0.0001, 0.0001],
-        'avg_vimdf (kg m**-2 s**-1) (Time-mean total column vertically-integrated moisture divergence flux)': [-0.0001, 0.0001],
-        'tp_mm (mm) (Total precipitation)': [-100, 100],
-        'avg_tprate_W (W m**-2) (Time-mean total precipitation rate)': [-100, 100],
-        't2m (°C) (2 metre temperature)': [-5, 5],
-        'd2m (°C) (2 metre dewpoint temperature)': [-5, 5],
-        'balanc_earth (W m**-2) (earth_balance)': [-20, 20],
-        'balanc_atmos (W m**-2) (atmospheric_balance)': [-100, 100],
-        'balanc_surface (W m**-2) (surface_balance)': [-5, 5]
-    }
+    O eixo y é simétrico e o mesmo para todos os boxes (automático, ou fixo
+    em common.LIMITES_ANOMALIA)."""
 
-    DIR_SCRIPT = Path(__file__).resolve().parent
-    DIR_ROOT = DIR_SCRIPT.parent.parent
-
-    # Diretórios importantes
-    DIR_FIGS = DIR_ROOT / "dataout"
-    DIR_BOX = DIR_ROOT / "dataout" / "tables" 
-
-    print("Raiz do projeto:", DIR_ROOT) 
-    print("Diretório do script:", DIR_SCRIPT)
-    print("Diretório de saída:", DIR_FIGS)
-    print("Preparando os plots de todas as variáveis do dataset gerado pelo namelist.txt...")
-
-    df_box = pd.read_csv(DIR_BOX / "boxes.csv")
+    df_box = cm.ler_boxes()
     print(df_box.head())
 
-    # Itera sobre todas as combinações de exp_name e name
-    for idx, row in df_box.iterrows():
-        exp_name = row['exp_name']
-        name     = row['name']
+    dados = []
+    for _, row in df_box.iterrows():
+        file = cm.arq_anomalias(row['exp_name'], row['name'])
+        if not file.exists():
+            print(f"Atenção: {file} não encontrado. Rode antes desv.py")
+            continue
+        dados.append((row, pd.read_csv(file, parse_dates=["time"])))
 
-        DIR_CSV = DIR_FIGS / "tables" / exp_name 
+    variaveis = dict.fromkeys(c for _, df in dados for c in df.columns.drop(["time", "mes"]))
+    for var in variaveis:
+        ylim = cm.limites(var, [df[var] for _, df in dados if var in df], cm.LIMITES_ANOMALIA, simetrico=True)
+        nome_abreviado, unidade, nome_completo = cm.separar_nome_coluna(var)
 
-        files = sorted(DIR_CSV.glob("anomalias*.csv"))
-        for file in files:
-            print(f"Lendo arquivo: {file}")
-            stem = file.stem
-            # Removemos o prefixo "time_series_"
-            nome_regiao = stem.replace("time_series_", "")
-            print(nome_regiao)
+        for row, df in dados:
+            if var not in df:
+                continue
+            exp_name, name = row['exp_name'], row['name']
+            cores = np.where(df[var] >= 0, 'tab:red', 'tab:blue')
 
-            df = pd.read_csv(file, parse_dates=["time"])
+            fig, ax = plt.subplots(figsize=(20, 6))
+            ax.bar(df["time"], df[var], width=25, color=cores, alpha=0.8)
+            ax.plot(df["time"], df[var].rolling(12, center=True).mean(),
+                    color='black', linewidth=2, label='Média móvel 12 meses')
+            ax.axhline(0, color='black', linewidth=0.8)
 
-            for var in df.columns:
-                if var == "mes" or var == "time":
-                    continue
+            ax.set_title(f'Anomalia de {nome_completo} — {exp_name} {name}')
+            ax.set_xlabel('Tempo')
+            ax.set_ylabel(unidade)
+            ax.xaxis.set_major_locator(mdates.YearLocator())
+            ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
+            ax.grid(True, alpha=0.4)
+            ax.legend(loc='upper left')
+            if ylim:
+                ax.set_ylim(ylim)
 
-                # Regex segura
-                nome_abreviado, unidade, nome_completo = var, "", var
-                match = re.match(r"^(.*?) \((.*?)\) \((.*?)\)$", var)
-                if match:
-                    nome_abreviado, unidade, nome_completo = match.groups()
+            outdir = cm.dir_figuras(exp_name, name, "anomalias")
+            fig.savefig(outdir / f'{exp_name}_{name}_{nome_abreviado}_anomalias_time_series.jpg',
+                        dpi=cm.DPI, bbox_inches='tight')
+            plt.close(fig)
+        print(f'Plotado: {var}')
 
-                print(f"Plotando variável: {var}")
-                fig, ax = plt.subplots(figsize=(20, 6))
-                ax.plot(df["time"], df[var], marker='o')
-                ax.set_title(f'Time Series of {nome_completo}')
-                ax.set_xlabel('Time')
-                ax.set_ylabel(unidade)
-                ax.grid(True)
-                if var in limits_dict:
-                    ax.set_ylim(limits_dict[var])
-
-                outdir = DIR_FIGS / exp_name / name / "anomalias"
-                outdir.mkdir(parents=True, exist_ok=True)
-                fig.savefig(outdir / f'{nome_regiao}_{nome_abreviado}_anomalias_time_series.jpg', dpi=300, bbox_inches='tight')
-                plt.close(fig)
-
-                print(f'Saved plot for {var} to {outdir / f"{nome_regiao}_{nome_abreviado}_anomalias_time_series.jpg"}')
-
-            
 
 if __name__ == "__main__":
     plot_desv()

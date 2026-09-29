@@ -1,122 +1,113 @@
-import pandas as pd
-import matplotlib.pyplot as plt
+"""
+Plota o ciclo anual (média de cada mês) de uma variável:
+  - normal climatológica 1991–2020 (referência, tracejado cinza);
+  - cada década (1991–2000, 2001–2010, ...), com cores em ordem temporal;
+  - a série analisada, com as datas no rótulo (linha preta).
+
+Uso:
+    python scripts/plots/plot_medias_mensais.py            # escolhe a variável no terminal
+    python scripts/plots/plot_medias_mensais.py tp_mm      # pelo nome abreviado
+    python scripts/plots/plot_medias_mensais.py all        # todas as variáveis
+"""
+import sys
 from pathlib import Path
-import re
 
-def plot_medias():
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import pandas as pd
 
-    limits_dict = {
-        'cbh (m) (Cloud base height)': [-1000, 1000],
-        'd2m (K) (2 metre dewpoint temperature)': [-5, 5],
-        't2m (K) (2 metre temperature)': [-5, 5],
-        'hcc ((0 - 1)) (High cloud cover)': [-0.2, 0.2],
-        'lcc ((0 - 1)) (Low cloud cover)': [-0.2, 0.2],
-        'mcc ((0 - 1)) (Medium cloud cover)': [-0.2, 0.2],
-        'tcc ((0 - 1)) (Total cloud cover)': [-0.2, 0.2],
-        'tcw (kg m**-2) (Total column water)': [-15, 15],
-        'tcwv (kg m**-2) (Total column vertically-integrated water vapour)': [-15, 15],
-        'tp (m) (Total precipitation)': [-0.01, 0.01],
-        'avg_ie (kg m**-2 s**-1) (Time-mean moisture flux)': [-1e-4, 1e-4],
-        'avg_sdirswrf (W m**-2) (Time-mean surface direct short-wave radiation flux)': [-50, 50],
-        'avg_sdirswrfcs (W m**-2) (Time-mean surface direct short-wave radiation flux, clear sky)': [-5, 5],
-        'avg_sdlwrf (W m**-2) (Time-mean surface downward long-wave radiation flux)': [-25, 25],
-        'avg_sdlwrfcs (W m**-2) (Time-mean surface downward long-wave radiation flux, clear sky)': [-25, 25],
-        'avg_sdswrf (W m**-2) (Time-mean surface downward short-wave radiation flux)': [-50, 50],
-        'avg_sdswrfcs (W m**-2) (Time-mean surface downward short-wave radiation flux, clear sky)': [-10, 10],
-        'avg_sduvrf (W m**-2) (Time-mean surface downward UV radiation flux)': [-10, 10],
-        'avg_slhtf (W m**-2) (Time-mean surface latent heat flux)': [-20, 20],
-        'avg_snlwrf (W m**-2) (Time-mean surface net long-wave radiation flux)': [-20, 20],
-        'avg_snlwrfcs (W m**-2) (Time-mean surface net long-wave radiation flux, clear sky)': [-20, 20],
-        'avg_snswrf (W m**-2) (Time-mean surface net short-wave radiation flux)': [-30, 30],
-        'avg_snswrfcs (W m**-2) (Time-mean surface net short-wave radiation flux, clear sky)': [-10, 10],
-        'avg_ishf (W m**-2) (Time-mean surface sensible heat flux)': [-30, 30],
-        'avg_tdswrf (W m**-2) (Time mean top downward short-wave radiation flux)': [-2.5, 2.5],
-        'avg_tnlwrf (W m**-2) (Time-mean top net long-wave radiation flux)': [-20, 20],
-        'avg_tnlwrfcs (W m**-2) (Time-mean top net long-wave radiation flux, clear sky)': [-10, 10],
-        'avg_tnswrf (W m**-2) (Time-mean top net short-wave radiation flux)': [-30, 30],
-        'avg_tnswrfcs (W m**-2) (Time-mean top net short-wave radiation flux, clear sky)': [-5, 5],
-        'avg_tprate (kg m**-2 s**-1) (Time-mean total precipitation rate)': [-0.0001, 0.0001],
-        'avg_vimdf (kg m**-2 s**-1) (Time-mean total column vertically-integrated moisture divergence flux)': [-0.0001, 0.0001],
-        'tp_mm (mm) (Total precipitation)': [-100, 100],
-        'avg_tprate_W (W m**-2) (Time-mean total precipitation rate)': [-100, 100],
-        't2m (°C) (2 metre temperature)': [-5, 5],
-        'd2m (°C) (2 metre dewpoint temperature)': [-5, 5],
-        'balanc_earth (W m**-2) (earth_balance)': [-20, 20],
-        'balanc_atmos (W m**-2) (atmospheric_balance)': [-100, 100],
-        'balanc_surface (W m**-2) (surface_balance)': [-5, 5]
-    }
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import common as cm
 
-    DIR_SCRIPT = Path(__file__).resolve().parent
-    DIR_ROOT = DIR_SCRIPT.parent.parent
-    DIR_FIGS = DIR_ROOT / "dataout"
-    DIR_BOX = DIR_ROOT / "dataout" / "tables"
+MARCADORES = ['s', '^', 'D', 'v', 'P', 'X']
+CORES_DECADAS = "cividis"  # sequencial azul -> amarelo, segura para daltonismo
+MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
 
-    df_box = pd.read_csv(DIR_BOX / "boxes.csv")
 
-    def _prep_mes_index(d: pd.DataFrame) -> pd.DataFrame:
-        """Garante coluna 'mes' (1..12) como índice crescente."""
-        d = d.copy()
-        if "mes" in d.columns:
-            d["mes"] = pd.to_numeric(d["mes"], errors="coerce")
-        elif "time" in d.columns:
-            d["mes"] = pd.to_datetime(d["time"], errors="coerce").dt.month
-        else:
-            raise ValueError("CSV de climatologia sem 'mes' ou 'time'.")
-        d.set_index("mes", inplace=True)
-        d.sort_index(inplace=True)
-        return d
+def escolher_variaveis(colunas, escolha=None):
+    """Aceita o nome abreviado, o nome completo da coluna, o número da lista ou 'all'."""
+    por_abrev = {cm.separar_nome_coluna(c)[0]: c for c in colunas}
+
+    while True:
+        if escolha is None:
+            for i, c in enumerate(colunas):
+                print(f"{i:3d}  {c}")
+            escolha = input("Escolha a variável para plotar (número, nome abreviado ou 'all'): ").strip()
+
+        if escolha == "all":
+            return list(colunas)
+        if escolha.isdigit() and int(escolha) < len(colunas):
+            return [colunas[int(escolha)]]
+        if escolha in colunas:
+            return [escolha]
+        if escolha in por_abrev:
+            return [por_abrev[escolha]]
+        print(f"Variável '{escolha}' não encontrada.")
+        escolha = None
+
+
+def plot_medias(escolha=None):
+
+    df_box = cm.ler_boxes()
+    variaveis = None
 
     for _, row in df_box.iterrows():
         exp_name = row["exp_name"]
-        name     = row["name"]
+        name = row["name"]
 
-        DIR_CSV = DIR_FIGS / "tables" / exp_name
+        # (rótulo, tabela, estilo da linha)
+        tabelas = []
+        normal = cm.ler_normal(row)
+        if normal is not None:
+            tabelas.append((cm.NORMAL_ROTULO, normal,
+                            dict(color='gray', linestyle='--', linewidth=3, zorder=3)))
 
-        # arquivos esperados
-        paths = {
-            "Série total": DIR_CSV / f"{exp_name}_{name}_clima.csv",
-            "1980–1995"  : DIR_CSV / f"{exp_name}_{name}_clima_80_95.csv",
-            "1996–2004"  : DIR_CSV / f"{exp_name}_{name}_clima_96_04.csv",
-            "2005–2015"  : DIR_CSV / f"{exp_name}_{name}_clima_05_15.csv",
-            "2016–2024"  : DIR_CSV / f"{exp_name}_{name}_clima_16_24.csv",
-        }
+        decadas = cm.arqs_clima_decadas(exp_name, name)
+        # até 0.8 da escala: o amarelo do fim da cividis fica claro demais no fundo branco
+        cores = plt.get_cmap(CORES_DECADAS)([0.8 * i / max(len(decadas) - 1, 1) for i in range(len(decadas))])
+        for (ini, fim, arq), cor, marker in zip(decadas, cores, MARCADORES * 3):
+            tabelas.append((f"{ini}–{fim}", pd.read_csv(arq, index_col="mes"),
+                            dict(color=cor, marker=marker, linewidth=1.3, markersize=5)))
 
-        df = pd.read_csv(paths['Série total'])
-        df1 = pd.read_csv(paths["1980–1995"])
-        df2 = pd.read_csv(paths["1996–2004"])
-        df3 = pd.read_csv(paths["2005–2015"])
-        df4 = pd.read_csv(paths["2016–2024"])
+        arq_serie = cm.arq_serie(exp_name, name)
+        if arq_serie.exists() and cm.arq_clima(exp_name, name).exists():
+            t = pd.read_csv(arq_serie, usecols=["time"], parse_dates=["time"])["time"]
+            rotulo = f"Série {t.min():%m/%Y}–{t.max():%m/%Y}"
+            tabelas.append((rotulo, pd.read_csv(cm.arq_clima(exp_name, name), index_col="mes"),
+                            dict(color='black', marker='o', linewidth=2.5, zorder=4)))
 
-        variavel = df.columns
-        print(variavel)
-        var_name = input(str('Escolha a varíavel para plotar: '))
-        unidade = var_name.split('(')[1].split(')')[0]  # 'W m**-2'
+        if not tabelas:
+            print(f"Atenção: nenhuma climatologia para {exp_name}/{name}. Rode antes climatologia.py")
+            continue
 
-# Extrai nome descritivo (entre segundo e terceiro parênteses)
-        nome_var = var_name.split('(')[2].split(')')[0]  # 'earth_balance'
+        # a variável é escolhida uma vez e usada em todos os boxes
+        if variaveis is None:
+            variaveis = escolher_variaveis(list(tabelas[0][1].columns.drop("ano", errors="ignore")), escolha)
 
-        print(f'Variavel: {var_name}')
-        print(f'Nome: {nome_var}')
-        print(f'Unidade: {unidade}')
+        outdir = cm.dir_figuras(exp_name, name, "clima")
+        for var_name in variaveis:
+            nome_abreviado, unidade, nome_var = cm.separar_nome_coluna(var_name)
 
-        fig, ax = plt.subplots(figsize=(20, 6))
-        ax.plot(df[var_name], marker='o', label='Série total')
-        ax.plot(df1[var_name], marker='x', label='1980–1995')
-        ax.plot(df2[var_name], marker='d', label='1996–2004')
-        ax.plot(df3[var_name], marker='x', label='2005–2015')
-        ax.plot(df4[var_name], marker='o', label='2016–2024')
+            fig, ax = plt.subplots(figsize=(20, 6))
+            for rotulo, tab, estilo in tabelas:
+                if var_name in tab.columns and not tab.empty:
+                    ax.plot(tab.index, tab[var_name], label=rotulo, **estilo)
 
-        ax.set_title(f'Time Series of {nome_var}')
-        ax.set_xlabel('Mês')
-        ax.set_ylabel(unidade)
-        ax.grid(True)
-        ax.legend()
-        
-        outdir = DIR_FIGS / exp_name / name / "clima"
-        outdir.mkdir(parents=True, exist_ok=True)
-        fig.savefig(outdir / f'{exp_name}_{name}_clima{nome_var}_time_series.jpg', dpi=300, bbox_inches='tight')
-        plt.close(fig)
+            ax.set_title(f'Ciclo anual de {nome_var} — {exp_name} {name}')
+            ax.set_xticks(range(1, 13))
+            ax.set_xticklabels(MESES)
+            ax.set_xlim(0.5, 12.5)
+            ax.set_xlabel('Mês')
+            ax.set_ylabel(unidade)
+            ax.grid(True, alpha=0.4)
+            ax.legend(ncol=2)
 
-#
+            out = outdir / f'{exp_name}_{name}_clima_{nome_abreviado}.jpg'
+            fig.savefig(out, dpi=cm.DPI, bbox_inches='tight')
+            plt.close(fig)
+            print(f"Figura salva em: {out}")
+
+
 if __name__ == "__main__":
-    plot_medias()
+    plot_medias(sys.argv[1] if len(sys.argv) > 1 else None)

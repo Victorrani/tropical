@@ -1,93 +1,66 @@
-import pandas as pd
-import xarray as xr
-import matplotlib.pyplot as plt
+import sys
 from pathlib import Path
-import logging
-import time
-import cartopy.crs as ccrs
+
+import xarray as xr
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import common as cm
 
 
+def slice_box(modo="analise"):
+    """Recorta os netCDF de datain/raw (ou datain/raw/clima) para cada box do namelist.txt."""
 
-def slice_box():
+    print("Raiz do projeto:", cm.DIR_ROOT)
+    dir_raw, dir_processed = cm.dir_raw(modo), cm.dir_processed(modo)
+    print("Modo:", modo)
+    print("Diretório de saída:", dir_processed)
 
-    DIR_SCRIPT = Path(__file__).resolve().parent
+    df = cm.ler_namelist()
+    print(df)
 
-# Raiz do projeto 
-    DIR_ROOT = DIR_SCRIPT.parent.parent
+    # Tabela com todos os boxes: usada pelos demais scripts
+    cm.DIR_TABLES.mkdir(parents=True, exist_ok=True)
+    df.to_csv(cm.BOXES_CSV, index=False)
 
-    # Diretórios importantes
-    DIR_OUT = DIR_ROOT / "datain" / "processed"
-    DIR_LOGS = DIR_ROOT / "logs"
-    DIR_DATAIN = DIR_ROOT / "datain" / "raw"
-    DIR_FIGS = DIR_ROOT / "dataout" / "tables"
-    DIR_FIGS.mkdir(parents=True, exist_ok=True)
+    arquivos_nc = sorted(dir_raw.glob("*.nc"))
+    if not arquivos_nc:
+        raise FileNotFoundError(f"Nenhum arquivo .nc em {dir_raw}. Rode antes: python scripts/download/get_data.py {modo}")
 
+    for arquivo in arquivos_nc:
+        # ex.: data_stream-moda_stepType-avgad -> avgad
+        nome_curto = arquivo.stem.split("stepType-")[-1]
+        print(f"Lendo {arquivo.name}")
 
-    print("Raiz do projeto:", DIR_ROOT) 
-    print("Diretório do script:", DIR_SCRIPT)
-    print("Diretório de saída:", DIR_OUT)
+        with xr.open_dataset(arquivo) as ds:
+            lat = ds["latitude"]
+            lon = ds["longitude"]
+            # ERA5 vem com latitude decrescente, mas não assumimos isso
+            lat_desc = bool(lat[0] > lat[-1])
 
-    lista_nomes = ['radiation', 'cloudBaseHight', 'clouds']
-    arquivos_nc = sorted(DIR_DATAIN.glob("*.nc"))
-    for arquivo, nome_curto in zip(arquivos_nc, lista_nomes):
-        nome_arquivo = arquivo.stem
-        print(nome_arquivo)
-        print("Criando arquivos individuais dos experimentos...")
-        ds = xr.open_dataset(DIR_DATAIN / arquivo)
+            for _, b in df.iterrows():
+                exp_name, name = b["exp_name"], b["name"]
+                lat_slice = slice(b["lat_max"], b["lat_min"]) if lat_desc else slice(b["lat_min"], b["lat_max"])
+                ds_box = ds.sel(latitude=lat_slice, longitude=slice(b["lon_min"], b["lon_max"]))
 
+                if ds_box.sizes["latitude"] == 0 or ds_box.sizes["longitude"] == 0:
+                    raise ValueError(
+                        f"Box {exp_name}/{name} fora do domínio dos dados "
+                        f"(lat {float(lat.min())}..{float(lat.max())}, lon {float(lon.min())}..{float(lon.max())})"
+                    )
 
-        with open(DIR_SCRIPT / 'namelist.txt', "r") as f:
-            linhas = [linha.strip() for linha in f if linha.strip()]
+                print(f"  Box: {name}, Latitude: {b['lat_min']}|{b['lat_max']}, "
+                      f"Longitude: {b['lon_min']}|{b['lon_max']} "
+                      f"({ds_box.sizes['latitude']}x{ds_box.sizes['longitude']} pontos)")
 
-        linhas = linhas[1:]
-        for linha in linhas:
-            # Criar dicionário {chave: valor}
-            dados = dict(item.split("=") for item in linha.split(";"))
+                output_dir = dir_processed / exp_name / name
+                output_dir.mkdir(parents=True, exist_ok=True)
+                df[(df["exp_name"] == exp_name) & (df["name"] == name)].to_csv(output_dir / "boxes.csv", index=False)
 
-        boxes = []
-        for linha in linhas:
-            pares = linha.split(';')
-            d = {}
-            for par in pares:
-                k, v = par.split('=')
-                try:
-                    d[k] = float(v) if '.' in v or '-' in v else int(v)
-                except ValueError:
-                    d[k] = v 
-            boxes.append(d)
+                out_nc = output_dir / f"{exp_name}_{nome_curto}_{name}.nc"
+                ds_box.to_netcdf(out_nc, mode="w", format="NETCDF4")
+                print(f"  Arquivo {out_nc.name} salvo em {output_dir}")
 
-
-        df = pd.DataFrame(boxes)
-        print(df)
-
-        # Salvar em CSV (sem o índice)
-        df.to_csv(DIR_FIGS / "boxes.csv", index=False)
-        
-
-        for b in boxes:
-            exp_name = b['exp_name']
-            name    = b["name"]
-            latmin  = b["lat_min"]
-            latmax  = b["lat_max"]
-            lonmin  = b["lon_min"]
-            lonmax  = b["lon_max"]
-    
-            ds_box = ds.sel({"latitude": slice(latmax, latmin), "longitude": slice(lonmin, lonmax)})
-            print(f"Box: {name}, Latitude: {latmin}|{latmax}, Longitude: {lonmin}|{lonmax}")
-
-            output_dir = DIR_OUT / exp_name / name
-            output_dir.mkdir(parents=True, exist_ok=True)
-            df.to_csv(output_dir / "boxes.csv", index=False)
-
-            ds_box.to_netcdf(output_dir / f"{exp_name}_{nome_curto}_{name}.nc", mode="w", format="NETCDF4")
-            print(f"Arquivo {exp_name}_{nome_curto}_{name}.nc salvo com sucesso em {output_dir}")
-
-        ds.close()
 
 if __name__ == "__main__":
-    slice_box()
-
-
-
-
-
+    # python slice.py [analise|clima]
+    slice_box(sys.argv[1] if len(sys.argv) > 1 else "analise")

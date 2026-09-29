@@ -1,3 +1,2 @@
-exp_name,name,lat_max,lat_min,lon_max,lon_min
-EXP1,teste1,-1.0,-4.5,-53.5,-56.5
-EXP2,teste2,-5.0,-10.0,-50.0,-55.0
+exp_name,name,lat_max,lat_min,lon_max,lon_min,superficie
+EXP2,teste2,-5.0,-10.0,-50.0,-55.0,todos

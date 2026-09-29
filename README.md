@@ -1,239 +1,308 @@
-# Projeto: Balanços de Radiação em Domínios Específicos
+# Projeto: Balanços de Energia em Domínios Específicos
 
-**Disciplina:** Meteorologia Tropical - IAG/USP  
-**Autor:** Victor Antunes Ranieri  
-**Data:** [2025-12-22]
+**Disciplina:** Meteorologia Tropical - IAG/USP
+**Autor:** Victor Antunes Ranieri
+**Data:** 2025-12-22 (reorganizado em 2026-09)
 
 ## 📋 Objetivo
-Processar, analisar e visualizar balanços de radiação atmosférica para regiões específicas (boxes), 
-utilizando dados de reanálise ERA5.
+Processar, analisar e visualizar os balanços de energia (topo da atmosfera, atmosfera e
+superfície) e variáveis de nuvens, precipitação e fluxos de calor em regiões escolhidas
+pelo usuário (boxes), usando as médias mensais da reanálise ERA5. As anomalias são
+calculadas em relação à **normal climatológica 1991–2020** do mesmo domínio.
 
-## 🗂️ Estrutura de Diretórios
+📘 Dados, normal climatológica, equações e variáveis estão detalhados em
+[docs/METODOLOGIA.md](docs/METODOLOGIA.md).
+
+## 🗂️ Estrutura de diretórios
 ```
-├── datain/               # Dados de entrada (input)
-│   ├── processed/        # Subconjuntos processados (regiões/temporalidades específicas)
-│   └── raw/              # Dados brutos completos (originais, imutáveis)
+├── datain/
+│   ├── raw/                  # ERA5 do período de análise (get_data.py analise)
+│   │   └── clima/            # ERA5 do período da normal (temporário, apagado pelo normal.py)
+│   ├── processed/EXP/nome/   # recortes de cada box (slice.py)
+│   └── mascara/              # máscara continente/oceano do ERA5 (get_data.py mascara)
 │
-├── dataout/              # Resultados e saídas (output)
-│   └── tables/           # Tabelas geradas a partir das análises
+├── dataout/
+│   ├── tables/               # boxes.csv e tabelas CSV de cada experimento
+│   ├── balanc/               # mapas mensais dos balanços no domínio total, com os boxes
+│   ├── boxes.jpg             # mapa com a localização dos boxes
+│   └── EXP/nome/             # figuras de cada box
+│       ├── *_time_series.jpg #   séries temporais
+│       ├── anomalias/        #   anomalias em relação à normal
+│       ├── clima/            #   ciclo anual (normal, décadas e série)
+│       ├── balanc/           #   mapas mensais dos balanços do box
+│       └── mapas/<variavel>/ #   mapas mensais de cada variável
 │
-├── env/                  # Configuração do ambiente virtual/conda
-│   └── environment.yml   # Especificação das dependências do projeto
+├── docs/
+│   ├── METODOLOGIA.md        # dados, normal, equações e variáveis
+│   └── img/                  # figuras de exemplo usadas no README
 │
-├── logs/                 # Registros de execução (logs)
-│   └── download.log      # Exemplo: log específico do download
-│
-├── notebooks/            # Jupyter notebooks para exploração e análise interativa
-│
-├── README.md             # Documentação principal do projeto
-│
-├── scripts/              # Códigos Python reutilizáveis
-│   ├── analysis/         # Processamento e cálculos estatísticos
-│   │   ├── box_maps.py      # Geração de mapas por região/box
-│   │   ├── climatologia.py  # Cálculo de climatologias
-│   │   ├── desv.py          # Cálculo de desvios/anomalias
-│   │   ├── namelist.txt     # Configurações/parâmetros para análises
-│   │   ├── slice.py         # Extração de subconjuntos espaciais/temporais
-│   │   └── time_serie_vars.py # Geração de séries temporais
-│   │
-│   ├── download/         # Obtenção de dados de fontes externas
-│   │   └── get_data.py   # Script principal de download
-│   │
-│   └── plots/            # Visualizações e gráficos
-│       ├── nome_variavel.py        # Plots específicos por variável
-│       ├── plot_balanc_box.py      # Balanços por região
-│       ├── plot_balanc.py          # Gráficos de balanço geral
-│       ├── plot_desv.py            # Visualização de desvios/anomalias
-│       ├── plot_medias_mensais.py  # Médias mensais
-│       ├── plot_vars.py            # Plots genéricos de variáveis
-│       └── plot_vars_time_series.py # Séries temporais gráficas
-│
-└── shapefiles/           # Arquivos geoespaciais (formato Shapefile)
-├── continentes.shp # Delimitação continental
-└── regioes.shp # Regiões de estudo específicas
+├── env/environment.yml       # ambiente conda
+├── logs/download.log         # log dos downloads
+├── shapefiles/               # estados do Brasil e continentes
+└── scripts/
+    ├── common.py             # configurações e funções compartilhadas (ver abaixo)
+    ├── download/get_data.py  # download do ERA5 (análise, normal e máscara)
+    ├── analysis/
+    │   ├── namelist.txt      # definição dos boxes
+    │   ├── normal.py         # gera a normal 1991–2020 (baixa, processa e apaga os .nc)
+    │   ├── slice.py          # recorta os boxes
+    │   ├── time_serie_vars.py# séries das médias em cada box + balanços
+    │   ├── climatologia.py   # normal e ciclo anual da série
+    │   ├── desv.py           # anomalias
+    │   └── box_maps.py       # mapa com a localização dos boxes
+    └── plots/
+        ├── plot_vars_time_series.py  # séries temporais
+        ├── plot_desv.py              # anomalias
+        ├── plot_medias_mensais.py    # ciclo anual
+        ├── plot_balanc_box.py        # mapas dos balanços no domínio total
+        ├── plot_balanc.py            # mapas dos balanços de cada box
+        ├── plot_vars.py              # mapas de cada variável
+        └── nome_variavel.py          # lista as variáveis dos netCDF
 ```
 
-## Instruções para uso
-
-1. Faça o clone do repositório https://github.com/Victorrani/tropical.git
+## ⚙️ Instalação
 ```
 git clone https://github.com/Victorrani/tropical.git
-```
-2. Entre no diretório env para criar o ambiente conda estável
-```
-cd env
-```
-```
-conda env create -f environment.yml
-```
-```
+cd tropical
+conda env create -f env/environment.yml
 conda activate tropical-env
 ```
-## Download dos dados
-1. Antes de executar o script, é necessário instalar a biblioteca cdsapi e configurar sua chave de API do CDS. Para instruções detalhadas de configuração, consulte o guia oficial e a documentação do usuário: https://cds.climate.copernicus.eu/how-to-api
-2. Entre no diretório scripts/download você encontrará o script python get_data.py
+O download usa a API do Copernicus (CDS). Crie uma conta e configure o arquivo `~/.cdsapirc`
+com a sua chave: https://cds.climate.copernicus.eu/how-to-api
+
+Todos os comandos abaixo são executados a partir da raiz do projeto.
+
+## 🚀 Fluxo de uso
+
+### 1. Defina os boxes em `scripts/analysis/namelist.txt`
+Uma linha por box. Linhas iniciadas por `#` são ignoradas.
 ```
-python scripts/download/get_data.py
+exp_name=EXP1;name=sul;lat_max=-25;lat_min=-35;lon_max=-50;lon_min=-60;superficie=terra
+exp_name=EXP3;name=amazonia_oeste;lat_max=0;lat_min=-10;lon_max=-63;lon_min=-73
 ```
-<img width="1360" height="276" alt="image" src="https://github.com/user-attachments/assets/ed786152-6813-4df2-9703-1ca78b0c767d" />
+| Campo | Descrição |
+|---|---|
+| `exp_name`, `name` | nomes das pastas de saída (`dataout/EXP1/sul/`); o par não pode se repetir |
+| `lat_min`, `lat_max`, `lon_min`, `lon_max` | limites em graus; longitude entre −180 e 180 |
+| `superficie` (opcional) | `todos` (padrão), `terra` ou `oceano`: quais pontos entram na média do box |
 
-Antes de executar o script, é necessário instalar a biblioteca cdsapi e configurar sua chave de API do CDS. Para instruções detalhadas de configuração, consulte o guia oficial e a documentação do usuário: https://cds.climate.copernicus.eu/how-to-api
-Pode acontece de aparecer o erro “Your request is too large, please reduce your selection” dessa, forma você deverá fazer o download alterando o dimínio temporal e espacial do dado. Use um editor de texto para alterar o trecho a seguir do código
-<img width="783" height="154" alt="image" src="https://github.com/user-attachments/assets/a9e80744-9d19-4bb4-95fd-1f9e222e9fa6" />
+⚠️ **Prefira domínios pequenos.** A área baixada é o retângulo que envolve todos os boxes; o
+`get_data.py` mostra o tamanho estimado e pede confirmação acima de 1 GB.
 
-Após o final do download deverá ser encontrado no diretório datain/raw três arquivos no formato netCDF. Não altere o nome desses arquivos.
+`superficie=terra` é recomendado em boxes com litoral: no oceano o balanço de superfície e os
+fluxos de calor são muito diferentes dos do continente e contaminam a média.
 
-<img width="963" height="40" alt="image" src="https://github.com/user-attachments/assets/13c3589c-15ec-4e25-9d3f-cbda028f5853" />
-
-## 📍 Seleção dos Domínios
-
-### 1. Configure o Namelist
-Edite `scripts/analysis/namelist.txt` com seus experimentos:
-
-![Formato do Namelist](https://github.com/user-attachments/assets/61ab468e-579e-4f32-90b3-8ae407abe14b)
-
-⚠️ **Atenção:** Use coordenadas dentro dos limites espaciais dos dados brutos.
-
-### 2. Execute o Recorte
+### 2. Baixe a máscara continente/oceano (uma vez só)
 ```
-python scripts/analysis/slice.py
-````
-
-<img width="1027" height="562" alt="image" src="https://github.com/user-attachments/assets/eeb4219e-5235-40fb-8d7e-cbd43e34f58b" />
-
-O novo conjunto de dados poderá ser encontrado no diretório datain/processed
-
-<img width="653" height="40" alt="image" src="https://github.com/user-attachments/assets/853dbee8-aad3-4a7c-a07f-d6a65345c7df" />
-
-<img width="810" height="40" alt="image" src="https://github.com/user-attachments/assets/67f008e1-d550-42cf-b90f-74c5781e2e50" />
-
-O arquivo boxes.csv contém a descrição da localização da região selecionada além de ter dados netCDF com informação sobre altura das nuvens, radiação e precipitação
-
-<img width="810" height="40" alt="image" src="https://github.com/user-attachments/assets/373b881b-1973-4454-8b10-53ca7612e65b" />
-
-## Produzindo resultados
-
-## 📈 Equações de Balanço
-
-### 🌍 Balanço Global (TOA)
-**TOA = -(Radiação Solar Líquida + Radiação Térmica Líquida)**
-
-### 🌡️ Balanço na Superfície  
-**Superfície = -(Rad. Solar + Rad. Térmica) - Calor Sensível - Calor Latente**
-
-### ☁️ Balanço Atmosférico
-**Atmosfera = -(Variação de Radiação) + Calor Sensível + Calor Latente da Precipitação**
-
-
-
-1. No diretório script/analysis há um script chamado time_serie_vars.py. Ele será o responsável por extrair as informações de todos os arquivos netCDF e transforma-los em tabelas. Isso é feito para cada experimento separadamente.
+python scripts/download/get_data.py mascara
 ```
-python scripts/analysis/time_serie_vars.py
+Necessária para `superficie=terra|oceano` e para as escalas de cor separadas nos mapas.
+
+### 3. Gere a normal climatológica 1991–2020
 ```
-
-As tabelas dos resultados poderá ser encontrado no diretório dataout/tables 
-
-<img width="630" height="40" alt="image" src="https://github.com/user-attachments/assets/a6d161e8-e5a0-4f0f-86df-8b380c4f5413" />
-
-## Plot dos resultados
-
-No diretório scripts/plots há o script plot_vars_time_series.py. Ele irá produzir os plots básicos de todas as variáveis e criará também já algumas conversões de unidades. Criará também os balanços de superfície, atmosfera e terrestre.
-
-É nesse script que poderá ser alterado os limites para o eixo y dos resultados. Altere os limites se necessário.
-
-Os resultados ficarão no diretório dataout/ separados por experimento e nome
-
-<img width="1166" height="241" alt="image" src="https://github.com/user-attachments/assets/31a7b471-d3b3-488b-9c41-e57f79191692" />
-
-<img width="1169" height="385" alt="image" src="https://github.com/user-attachments/assets/de03d6b7-88c7-460a-acd3-227c806545e5" />
-
-
-## Gerando a climatologia e desvios da média
-
-No diretório script/analysis há um script chamado climatologia.py. Caso tenha sido necessário alterar o período analisado a climatologia pode ficar ruim. O script foi pensado para utilizar a série de 1980 até 2024.
-Rode esse script para gerar as tabelas com as médias dos períodos pré definidos. Os resultados estão em dataout/tables
+python scripts/analysis/normal.py            # baixa, processa e apaga os .nc da normal
+python scripts/analysis/normal.py --manter   # mantém os .nc
 ```
-python scripts/analysis/climatologia.py
+Gera `dataout/tables/EXP/EXP_nome_normal_91_20.csv`. A primeira linha do arquivo guarda as
+coordenadas e a superfície do box: **se você mudar um box no namelist, rode o `normal.py` de
+novo** — o `desv.py` recusa uma normal gerada para outro domínio.
+
+O download da normal usa sempre só a área dos boxes (a normal é calculada por box).
+
+### 4. Baixe o período de análise
 ```
-
-Para calcular os desvios da média utilize o script desv.py 
+python scripts/download/get_data.py analise              # usa ANO_INICIO–ANO_FIM do script
+python scripts/download/get_data.py analise 2023 2024    # período escolhido
 ```
-python scripts/analysis/desv.py
+Em `get_data.py` você configura:
+- `ANO_INICIO`, `ANO_FIM`: período padrão;
+- `AREA = [N, W, S, E]`: domínio dos mapas (os boxes precisam estar dentro); `None` usa a área dos boxes;
+- `VARIAVEIS`: variáveis baixadas;
+- `ANOS_POR_PEDIDO`: o CDS limita o tamanho de cada pedido ("Your request is too large"),
+  então o período é dividido em blocos de anos e depois juntado. Se o erro aparecer, diminua esse valor;
+- `TENTATIVAS`: falhas do servidor do CDS (ex.: `OperationalError`) são repetidas automaticamente.
+  Se o download parar mesmo assim, rode o mesmo comando de novo: os blocos já baixados são pulados.
+
+Os arquivos ficam em `datain/raw/` (um por tipo de variável do ERA5: `avgad`, `avgid`, `avgua`).
+
+### 5. Processe
 ```
-Importante: Rode os scripts nessa ordem. Podem ocorrer erros se feitos em ordem errada.
-
-Para plotar os resultados comparativos da climatologia e do desvio da média, vá para o diretório scripts/plots
-
+python scripts/analysis/slice.py            # recorta os boxes e gera dataout/tables/boxes.csv
+python scripts/analysis/time_serie_vars.py  # séries mensais das médias em cada box
+python scripts/analysis/climatologia.py     # normal, ciclo anual da série e de cada década
+python scripts/analysis/desv.py             # anomalias em relação à normal
 ```
-python scripts/plots/plot_desv.py
+As médias nos boxes são ponderadas pela área (cos da latitude). Rode os scripts nessa ordem.
+
+### 6. Gere as figuras
 ```
-<img width="1148" height="375" alt="image" src="https://github.com/user-attachments/assets/69b42bce-90c6-414c-b623-4f200c3d46ac" />
-
+python scripts/analysis/box_maps.py               # localização dos boxes
+python scripts/plots/plot_vars_time_series.py     # séries: mensal, média móvel 12 meses e normal
+python scripts/plots/plot_desv.py                 # anomalias em barras + média móvel 12 meses
+python scripts/plots/plot_medias_mensais.py all   # ciclo anual: normal, décadas e série atual
+python scripts/plots/plot_balanc_box.py           # mapas dos balanços no domínio total
+python scripts/plots/plot_balanc.py               # mapas dos balanços de cada box
+python scripts/plots/plot_vars.py 12              # mapas das variáveis, só em dezembro
 ```
-python scripts/plots/plot_medias_mensais.py
-```
-Para esse script é necessário copiar e colar o nome completo. Veja o exemplo a seguir:
+- `plot_medias_mensais.py` aceita o número, o nome abreviado (`tp_mm`) ou `all`; sem argumento, pergunta no terminal.
+- Os limites do eixo y das séries são automáticos e **iguais para todos os boxes**, para facilitar a
+  comparação. Para fixar o limite de uma variável, adicione-a em `LIMITES_SERIE` ou
+  `LIMITES_ANOMALIA` no `scripts/common.py`.
+- Nos mapas, com a máscara baixada, o balanço de superfície (e os fluxos de calor sensível e
+  latente) usa escalas de cor separadas para continente e oceano: no oceano o saldo mensal é
+  muito maior, pois ele armazena e transporta calor.
+- `plot_vars.py` gera um mapa por variável, mês e box, para todos os anos dos meses escolhidos:
+  `12` (dezembro), `12 1 2` (verão), `all` (todos os meses — milhares de figuras). Para escolher
+  variáveis: `--vars tp avg_slhtf`. Sem argumentos, o script pergunta os meses.
 
-<img width="1031" height="274" alt="image" src="https://github.com/user-attachments/assets/212a7798-c476-43af-8560-008d458bfd57" />
+## 📊 Exemplos de resultados
+Exemplos de um teste com o período de **2015–2025** (ERA5 no domínio 30°N–70°S, 120°W–30°W) e
+anomalias em relação à normal 1991–2020. Os boxes têm 10° × 10°; em `sul` e `sao_paulo` a média
+usa só o continente (`superficie=terra`).
 
+### Domínios
+<img src="docs/img/boxes.jpg" width="450" alt="Mapa com os quatro boxes: sul, sao_paulo, amazonia_oeste e amazonia_leste">
 
-<img width="1146" height="382" alt="image" src="https://github.com/user-attachments/assets/c17fe35c-3014-4a85-8aa1-3cc8a69bfff1" />
+| Box | Região | lat | lon |
+|---|---|---|---|
+| `EXP1 sul` | RS, Uruguai e nordeste da Argentina | −35 a −25 | −60 a −50 |
+| `EXP2 sao_paulo` | estado de São Paulo | −27 a −17 | −54 a −44 |
+| `EXP3 amazonia_oeste` | oeste da Amazônia | −10 a 0 | −73 a −63 |
+| `EXP4 amazonia_leste` | leste da Amazônia | −10 a 0 | −58 a −48 |
 
-Como dito anteriormente, esse código foi pensado para uma série longa de 1980 até 2024. Caso seu dado for menor que esse período, algumas series mensais podem não aparecer.
+### Balanços de energia no domínio total (janeiro de 2024)
+![Mapas dos balanços da Terra, da atmosfera e da superfície em janeiro de 2024](docs/img/balanco_2024-01.jpg)
 
-## Variáveis. Nome no arquivo, unidade e nome completo:
-```
-'cbh (m) (Cloud base height)',
-'d2m (K) (2 metre dewpoint temperature)',
-'t2m (K) (2 metre temperature)', 'hcc ((0 - 1)) (High cloud cover)',
-'lcc ((0 - 1)) (Low cloud cover)', 'mcc ((0 - 1)) (Medium cloud cover)',
-'tcc ((0 - 1)) (Total cloud cover)',
-'tcw (kg m**-2) (Total column water)',
-'tcwv (kg m**-2) (Total column vertically-integrated water vapour)',
-'tp (m) (Total precipitation)',
-'avg_ie (kg m**-2 s**-1) (Time-mean moisture flux)',
-'avg_sdirswrf (W m**-2) (Time-mean surface direct short-wave radiation flux)',
-'avg_sdirswrfcs (W m**-2) (Time-mean surface direct short-wave radiation flux, clear sky)',
-'avg_sdlwrf (W m**-2) (Time-mean surface downward long-wave radiation flux)',
-'avg_sdlwrfcs (W m**-2) (Time-mean surface downward long-wave radiation flux, clear sky)',
-'avg_sdswrf (W m**-2) (Time-mean surface downward short-wave radiation flux)',
-'avg_sdswrfcs (W m**-2) (Time-mean surface downward short-wave radiation flux, clear sky)',
-'avg_sduvrf (W m**-2) (Time-mean surface downward UV radiation flux)',
-'avg_slhtf (W m**-2) (Time-mean surface latent heat flux)',
-'avg_snlwrf (W m**-2) (Time-mean surface net long-wave radiation flux)',
-'avg_snlwrfcs (W m**-2) (Time-mean surface net long-wave radiation flux, clear sky)',
-'avg_snswrf (W m**-2) (Time-mean surface net short-wave radiation flux)',
-'avg_snswrfcs (W m**-2) (Time-mean surface net short-wave radiation flux, clear sky)',
-'avg_ishf (W m**-2) (Time-mean surface sensible heat flux)',
-'avg_tdswrf (W m**-2) (Time mean top downward short-wave radiation flux)',
-'avg_tnlwrf (W m**-2) (Time-mean top net long-wave radiation flux)',
-'avg_tnlwrfcs (W m**-2) (Time-mean top net long-wave radiation flux, clear sky)',
-'avg_tnswrf (W m**-2) (Time-mean top net short-wave radiation flux)',
-'avg_tnswrfcs (W m**-2) (Time-mean top net short-wave radiation flux, clear sky)',
-'avg_tprate (kg m**-2 s**-1) (Time-mean total precipitation rate)',
-'avg_vimdf (kg m**-2 s**-1) (Time-mean total column vertically-integrated moisture divergence flux)',
-'tp_mm (mm) (Total precipitation)',
-'avg_tprate_W (W m**-2) (Time-mean total precipitation rate)',
-'t2m (°C) (2 metre temperature)',
-'d2m (°C) (2 metre dewpoint temperature)',
-'balanc_earth (W m**-2) (earth_balance)',
-'balanc_atmos (W m**-2) (atmospheric_balance)',
-'balanc_surface (W m**-2) (surface_balance)'
-```
+No verão austral, o topo da atmosfera ganha energia no Hemisfério Sul e perde no Norte. O
+balanço atmosférico destaca a ZCIT e a faixa diagonal da Zona de Convergência do Atlântico Sul
+(ZCAS), da Amazônia ao Atlântico Sudeste, onde o calor latente liberado pela chuva aquece a
+atmosfera. Na superfície, continente e oceano têm escalas próprias: o continente fica perto de
+zero, enquanto o Atlântico Sul acumula calor (laranja) e o Atlântico Norte perde (teal).
 
-## O que ainda está em desenvolvimento? 
+### Anomalia de chuva no oeste da Amazônia
+![Anomalias mensais de precipitação no oeste da Amazônia, 2015–2025](docs/img/anomalia_chuva_amazonia_oeste.jpg)
 
-Ainda está em fase de implementação os plots espaciais onde será possível ver a região delimitada pelo arquivo original e as regiões selecionadas pelo usuário para todas as variáveis, balanços e passos de tempo. Essa aplicação não está 100% boa, evite usar. Caso queira utilizar fazer mapas, utilize os dados recortados ou o dado bruto junto com a delimitação das caixas que estão no diretório /tables.
+A seca de 2023–2024 aparece como a mais longa sequência negativa da série: a média móvel de
+12 meses chega a cerca de −50 mm/mês, com outubro de 2023 em −124 mm. Em 2024 a temperatura
+ficou 1,0 °C acima da normal.
 
-<img width="963" height="345" alt="image" src="https://github.com/user-attachments/assets/ed6b5b11-94bf-4896-a98f-04ea5883ff73" />
-Exemplo do que está sendo produzido. Balanços atmosféricos, terrestre e superfície para cada passo de tmepo.
+### Mapas de um box: oeste da Amazônia, outubro de 2021 x outubro de 2023
+Exemplo dos mapas gerados para cada box (`plot_balanc.py`), comparando um outubro chuvoso
+(2021, La Niña, em cima) com o auge da seca (2023, embaixo):
 
-## Próximos passos: 
+![Balanços da Terra, da atmosfera e da superfície no box amazonia_oeste em outubro de 2021 e outubro de 2023](docs/img/balanco_amazonia_oeste_out2021_out2023.jpg)
 
-Desenvolver plots espaciais
-Melhorias nas unidades de cada variável e escala dos gráficos
-Criação de arquivos de log para outros processos de analises e plots.
+| Média no box (outubro) | 2021 | 2023 | Normal 1991–2020 |
+|---|---|---|---|
+| Chuva (mm) | 189 | **68** | 192 |
+| Balanço atmosférico (W m⁻²) | 131 | **30** | 131 |
+| Calor sensível (W m⁻², para cima) | 34 | **57** | 31 |
+| Calor latente (W m⁻², para cima) | 122 | 109 | 121 |
+| Temperatura a 2 m (°C) | 26,6 | **28,2** | 26,3 |
 
-## Dúvidas?? 
-Entre em contato comigo pelos emails victor.ranieri@usp.br ou victor.ranieri90@gmail.com 
+Na seca, quase não há calor latente liberado pela chuva e o balanço atmosférico cai de ~130
+para 30 W m⁻² (painel do meio, bem mais claro). Com o solo mais seco, parte da energia que iria
+para a evaporação passa a aquecer o ar: o calor sensível quase dobra e a temperatura fica
+~2 °C acima da normal. O balanço de superfície (à direita), perto de zero em 2021, fica
+positivo em 2023 (~4 W m⁻²): o solo seco passa a acumular calor.
 
+### Anomalia de chuva no Sul
+![Anomalias mensais de precipitação no box sul, 2015–2025](docs/img/anomalia_chuva_sul.jpg)
+
+Destacam-se a seca associada à La Niña em 2020–2022 (−45, −37 e −31 mm/mês na média anual) e
+os meses chuvosos de El Niño (dezembro de 2015, novembro de 2023). As enchentes do RS em
+abril–maio de 2024 aparecem (+85 e +67 mm), mas **diluídas pelo tamanho do box**: em maio de
+2024 choveu 331 mm no centro-norte do RS e 192 mm na média do box 10° × 10°. Boxes menores
+isolam melhor eventos regionais.
+
+### Ciclo anual da chuva em São Paulo
+![Ciclo anual de precipitação em São Paulo: normal 1991–2020, décadas de 1991 a 2025 e série 2015–2025](docs/img/ciclo_anual_chuva_sao_paulo.jpg)
+
+O gráfico mostra a normal 1991–2020 (tracejado), o ciclo anual de cada década e o da série
+analisada (preto). Na estação chuvosa as décadas aparecem em ordem: 1991–2000 foi a mais
+chuvosa e 2021–2025 a mais seca. A série 2015–2025 ficou abaixo da normal em quase todos os
+meses, principalmente em janeiro, março, setembro e dezembro (cerca de 30 mm a menos por mês),
+e o box teve déficit de chuva em todos os anos desde 2017.
+
+### Temperatura no leste da Amazônia
+![Série de temperatura a 2 m no leste da Amazônia com a normal 1991–2020](docs/img/temperatura_amazonia_leste.jpg)
+
+A temperatura mensal (azul) fica acima da normal (tracejado) nos eventos de El Niño de
+2015–2016 e 2023–2024; a média móvel de 12 meses chega a quase 1 °C acima da média do período.
+
+> O eixo y das séries tem a mesma amplitude em todos os boxes (para comparar a variabilidade
+> entre regiões), centrada nos dados de cada box.
+
+## ⏱️ Tempo estimado
+Tempos medidos em um computador pessoal (7 GB de RAM) com 24 variáveis. Os downloads dependem
+da fila do CDS e da conexão, e podem variar bastante.
+
+| Etapa | Exemplo | Tempo |
+|---|---|---|
+| Máscara continente/oceano | global, 1 campo (~1 MB) | < 1 min |
+| Normal 1991–2020 (`normal.py`) | área dos boxes, 30 anos em 6 pedidos | ~15–20 min |
+| Análise, área pequena | ~11° × 9°, 9 anos em 2 pedidos | ~4 min |
+| Análise, domínio grande | 100° × 90° (0,9 GB), 11 anos em 3 pedidos | ~18 min (~7 min por bloco de 5 anos) |
+| Processamento (`slice.py` → `desv.py`) | 4 boxes, 132 meses | < 30 s |
+| Séries, anomalias e ciclo anual | 4 boxes, ~30 variáveis | ~2–3 min |
+| Mapas dos balanços, domínio total (`plot_balanc_box.py`) | 100° × 90°, 132 meses | ~4 min (~1,6 s por mapa) |
+| Mapas dos balanços por box (`plot_balanc.py`) | 4 boxes × 132 meses | ~10 min (~1,2 s por mapa) |
+| Mapas das variáveis (`plot_vars.py 12 --vars tp avg_ishf`) | 2 variáveis × 4 boxes × 11 dezembros | ~1 min (~0,7 s por mapa) |
+| Mapas das variáveis (`plot_vars.py all`) | 24 variáveis × 4 boxes × 132 meses (~12 mil mapas) | ~2–3 h (estimado pelo tempo por mapa) |
+
+Cada pedido ao CDS passa por uma fila (em geral de segundos a poucos minutos) antes do
+download. Para domínios grandes, o tempo de transferência domina.
+
+## 📈 Equações de balanço
+Calculadas em `common.calcula_balancos`, com os fluxos na convenção original do ERA5
+(**positivo para baixo**):
+
+| Balanço | Equação |
+|---|---|
+| Terra (topo da atmosfera) | `R_topo = SW_liq,topo + LW_liq,topo` |
+| Superfície | `R_sup + SH + LH`, com `R_sup = SW_liq,sup + LW_liq,sup` |
+| Atmosfera | `(R_topo − R_sup) − SH + L·P` |
+
+`SH` e `LH` são os fluxos de calor sensível e latente, `P` a taxa de precipitação e
+`L = 2,5×10⁶ J kg⁻¹`. No balanço atmosférico entra o calor liberado pela precipitação (`L·P`);
+a diferença para o balanço de superfície é compensada pelo transporte horizontal de energia.
+
+## 🧾 Variáveis nas tabelas
+As colunas seguem o formato `abreviação (unidade) (nome completo)`.
+
+| Abreviação | Unidade | Descrição |
+|---|---|---|
+| `t2m`, `d2m` | K e °C | temperatura e ponto de orvalho a 2 m |
+| `tcc`, `hcc`, `mcc`, `lcc` | 0–1 | cobertura de nuvens total, alta, média e baixa |
+| `cbh` | m | altura da base das nuvens |
+| `tcw`, `tcwv` | kg m⁻² | água e vapor d'água na coluna |
+| `tp` | mm dia⁻¹ | precipitação total (média diária do mês) |
+| `tp_mm` | mm | precipitação total acumulada no mês |
+| `avg_tprate` | kg m⁻² dia⁻¹ (= mm dia⁻¹) | taxa de precipitação |
+| `avg_tprate_W` | W m⁻² | calor latente liberado pela precipitação (`L·P`) |
+| `avg_ie` | kg m⁻² dia⁻¹ | fluxo de umidade (evaporação; negativo = para cima) |
+| `avg_vimdf` | kg m⁻² dia⁻¹ | divergência do fluxo de umidade integrado na coluna |
+| `avg_slhtf`, `avg_ishf` | W m⁻² | calor latente e sensível na superfície ⁽*⁾ |
+| `avg_snswrf`, `avg_snlwrf` | W m⁻² | saldo de onda curta e longa na superfície ⁽*⁾ |
+| `avg_sdswrf`, `avg_sdlwrf`, `avg_sdirswrf`, `avg_sduvrf` | W m⁻² | radiação descendente na superfície (OC, OL, OC direta, UV) |
+| `avg_tnswrf`, `avg_tnlwrf` | W m⁻² | saldo de onda curta e longa no topo ⁽*⁾ |
+| `avg_tdswrf` | W m⁻² | onda curta incidente no topo |
+| `balanc_earth`, `balanc_surface`, `balanc_atmos` | W m⁻² | balanços de energia |
+
+⁽*⁾ Nas tabelas e figuras, esses fluxos estão com o **sinal invertido** em relação ao ERA5
+(positivo para cima). Os balanços são calculados antes da inversão.
+
+Variáveis em "por segundo" do ERA5 são convertidas para "por dia" (× 86400).
+
+## 🔧 Configurações compartilhadas (`scripts/common.py`)
+- caminhos do projeto (a raiz pode ser trocada pela variável de ambiente `TROPICAL_ROOT`, útil para testes);
+- `NORMAL` (1991–2020) e `COBERTURA_MINIMA` (fração mínima de anos com dados para calcular uma década);
+- `LIMITES_SERIE`, `LIMITES_ANOMALIA` (limites fixos opcionais dos gráficos);
+- equações de balanço, leitura do namelist e da máscara, funções de mapa.
+
+## 🔜 Próximos passos
+- Script único que roda todo o fluxo em ordem (os scripts continuam utilizáveis separadamente).
+- Opção de plotar só alguns meses/variáveis no `plot_vars.py`.
+
+## Dúvidas?
+Entre em contato pelos emails victor.ranieri@usp.br ou victor.ranieri90@gmail.com

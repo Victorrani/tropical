@@ -2,3 +2,9 @@
 *.nc
 *.png
 *.jpg
+# exceção: figuras de exemplo usadas no README
+!docs/img/*.png
+!docs/img/*.jpg
+
+__pycache__/
+.ipynb_checkpoints/

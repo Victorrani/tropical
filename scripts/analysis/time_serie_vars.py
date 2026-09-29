@@ -1,121 +1,129 @@
-import pandas as pd
-import xarray as xr
+import sys
 from pathlib import Path
 
-# Função principal
-def time_series_var():
-    """Gera uma tabela de séries temporais com médias espaciais para cada variável em arquivos NetCDF."""
+import numpy as np
+import pandas as pd
+import xarray as xr
 
-    # Diretórios
-    DIR_SCRIPT = Path(__file__).resolve().parent
-    DIR_ROOT = DIR_SCRIPT.parent.parent
-    DIR_BOX = DIR_ROOT / "dataout" / "tables"
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import common as cm
 
-    # Ler CSV com as caixas
-    df_box = pd.read_csv(DIR_BOX / "boxes.csv")
+# Variáveis cujo sinal é invertido nas tabelas (passam a ser positivas para cima)
+INVERTER_SINAL = ["avg_slhtf", "avg_snlwrf", "avg_snswrf", "avg_ishf", "avg_tnlwrf", "avg_tnswrf"]
+
+
+def media_espacial(ds, mascara=None):
+    """Média na área do box, ponderada por cos(lat), de cada variável do dataset.
+    `mascara` (0/1 em latitude x longitude) restringe a média a terra ou oceano."""
+    pesos = np.cos(np.deg2rad(ds["latitude"]))
+    if mascara is not None:
+        pesos = pesos * mascara
+    medias = {}
+    for var in ds.data_vars:
+        da = ds[var]
+        unidade = getattr(da, "units", "unknown")
+        lname = getattr(da, "long_name", var)
+        if {"latitude", "longitude"} <= set(da.dims):
+            da = da.weighted(pesos).mean(dim=["latitude", "longitude"])
+        outras = [d for d in da.dims if d != "time"]
+        if outras:
+            da = da.mean(dim=outras)
+        medias[cm.nome_coluna(var, unidade, lname)] = da
+    return xr.Dataset(medias)
+
+
+def time_series_var(modo="analise"):
+    """Gera uma tabela de séries temporais com médias espaciais para cada variável em arquivos NetCDF.
+    modo='clima' usa os dados da normal (datain/processed/clima) e salva time_series_normal_*.csv."""
+
+    df_box = cm.ler_boxes()
     print(df_box.head())
+    lsm = None
 
-    # Itera sobre todas as combinações de exp_name e name
-    for idx, row in df_box.iterrows():
+    for _, row in df_box.iterrows():
         exp_name = row['exp_name']
-        name     = row['name']
+        name = row['name']
+        superficie = cm.superficie_de(row)
+        if superficie != "todos" and lsm is None:
+            lsm = cm.ler_mascara()
+            if lsm is None:
+                raise FileNotFoundError(f"Box {exp_name}/{name} usa superficie={superficie}, mas a máscara "
+                                        f"não foi baixada. Rode: python scripts/download/get_data.py mascara")
 
-        # Diretório dos NetCDF para este box
-        DIR_DATAIN = DIR_ROOT / "datain" / "processed" / exp_name / name
-
-        # Lista todos os arquivos NetCDF
+        DIR_DATAIN = cm.dir_processed(modo) / exp_name / name
         files = sorted(DIR_DATAIN.glob("*.nc"))
         if not files:
             print(f"Atenção: nenhum arquivo encontrado em {DIR_DATAIN}")
             continue
 
-        df_all = None  # acumulador
-
+        df_all = None
         for file in files:
             print(f"Lendo arquivo: {file}")
-            ds = xr.open_dataset(file)
+            with xr.open_dataset(file) as ds:
+                if "valid_time" in ds.dims:
+                    ds = ds.rename({"valid_time": "time"})
+                if "time" not in ds.dims:
+                    print(f"  Atenção: {file.name} sem dimensão de tempo, ignorado")
+                    continue
+                mascara = cm.mascara_superficie(lsm, superficie, ds["latitude"], ds["longitude"])
+                if mascara is not None and mascara.sum() == 0:
+                    print(f"  Atenção: box {exp_name}/{name} não tem pontos de {superficie}; ignorado")
+                    df_all = None
+                    break
+                df_medias = media_espacial(ds, mascara).to_dataframe().reset_index()
 
-            if "valid_time" in ds.dims:
-                ds = ds.rename({"valid_time": "time"})
+            # normalizar para o primeiro dia do mês e agregar duplicatas no mesmo mês
+            df_medias["time"] = pd.to_datetime(df_medias["time"]).dt.to_period("M").dt.to_timestamp()
+            df_medias = df_medias.groupby("time").mean(numeric_only=True)
 
-            # médias espaciais
-            medias = {}
-            for var in ds.data_vars:
-                unidade = getattr(ds[var], "units", "unknown")
-                lname   = getattr(ds[var], "long_name", var)
-                colname = f"{var} ({unidade}) ({lname})"
-                
-                dims_media = [d for d in ds[var].dims if d != "time"]
-                try:
-                    medias[colname] = ds[var].mean(dim=dims_media)
-                except ValueError:
-                    medias[colname] = ds[var]
-
-            df_medias = xr.Dataset(medias).to_dataframe().reset_index()
-            ds.close()
-
-            if "time" not in df_medias.columns:
-                continue
-            
-            df_medias["time"] = pd.to_datetime(df_medias["time"])
-
-            # normalizar por mês (ou o que você estiver usando)
-            df_medias["time"] = df_medias["time"].dt.to_period("M").dt.to_timestamp()
-
-
-            # agregação (se houver mais de um registro no mesmo mês)
-            df_medias = df_medias.groupby("time", as_index=True).mean(numeric_only=True)
-            
-
-            # resolver QUALQUER outra sobreposição de nomes antes do join
-            if df_all is not None:
-                overlap = df_all.columns.intersection(df_medias.columns)
-                if len(overlap) > 0:
-                    # mantemos o que já está em df_all e descartamos duplicatas do novo
-                    df_medias = df_medias.drop(columns=list(overlap))
-
-            # join por mês
             if df_all is None:
                 df_all = df_medias
             else:
+                # em nomes repetidos entre arquivos, mantém o que já está em df_all
+                df_medias = df_medias.drop(columns=df_all.columns.intersection(df_medias.columns))
                 df_all = df_all.join(df_medias, how="outer")
 
-            df_resultado = df_all.sort_index().reset_index()
-        # Remove colunas que podem não existir
-        df_resultado = df_resultado.drop(columns=["number"], errors="ignore")
+        if df_all is None:
+            print(f"Atenção: nenhum dado temporal para {exp_name}/{name}")
+            continue
 
-        # Trabalhando nas unidades e sinais das variáveis (exemplo: tp em mm)
-        df_resultado['tp_mm (mm) (Total precipitation)'] = df_resultado['tp (m) (Total precipitation)'] * 1000 * 30
-        df_resultado['avg_slhtf (W m**-2) (Time-mean surface latent heat flux)'] *= -1
-        df_resultado['avg_snlwrf (W m**-2) (Time-mean surface net long-wave radiation flux)'] *= -1
-        df_resultado['avg_snswrf (W m**-2) (Time-mean surface net short-wave radiation flux)'] *= -1
-        df_resultado['avg_ishf (W m**-2) (Time-mean surface sensible heat flux)'] *= -1
-        df_resultado['avg_tnlwrf (W m**-2) (Time-mean top net long-wave radiation flux)'] *= -1
-        df_resultado['avg_tnswrf (W m**-2) (Time-mean top net short-wave radiation flux)'] *= -1
-        df_resultado['avg_tprate_W (W m**-2) (Time-mean total precipitation rate)'] = df_resultado['avg_tprate (kg m**-2 s**-1) (Time-mean total precipitation rate)'] * 2500000
-        df_resultado['t2m (°C) (2 metre temperature)'] = df_resultado['t2m (K) (2 metre temperature)'] - 273.15
-        df_resultado['d2m (°C) (2 metre dewpoint temperature)'] = df_resultado['d2m (K) (2 metre dewpoint temperature)'] - 273.15
+        df = df_all.sort_index().reset_index()
+        df = df.drop(columns=["number"], errors="ignore")
+        col = cm.colunas_por_abrev(df)
 
-        
-        # Balances
-        lw_nettop = df_resultado['avg_tnlwrf (W m**-2) (Time-mean top net long-wave radiation flux)']
-        sw_nettop = df_resultado['avg_tnswrf (W m**-2) (Time-mean top net short-wave radiation flux)']
-        sw_netsrf = df_resultado['avg_snswrf (W m**-2) (Time-mean surface net short-wave radiation flux)']
-        lw_netsrf = df_resultado['avg_snlwrf (W m**-2) (Time-mean surface net long-wave radiation flux)']
-        lh = df_resultado['avg_slhtf (W m**-2) (Time-mean surface latent heat flux)']
-        sh = df_resultado['avg_ishf (W m**-2) (Time-mean surface sensible heat flux)']
-        mtpr = df_resultado['avg_tprate_W (W m**-2) (Time-mean total precipitation rate)']
+        # Balanços calculados com os fluxos na convenção original do ERA5 (positivo para baixo)
+        bal = cm.calcula_balancos(
+            df[col['avg_tnswrf']], df[col['avg_tnlwrf']],
+            df[col['avg_snswrf']], df[col['avg_snlwrf']],
+            df[col['avg_ishf']], df[col['avg_slhtf']],
+            df[col['avg_tprate']],
+        )
 
-        df_resultado['balanc_earth (W m**-2) (earth_balance)'] = (-1)*(lw_nettop + sw_nettop)
-        df_resultado['balanc_atmos (W m**-2) (atmospheric_balance)'] = (-1)*(sw_nettop - sw_netsrf) + (-1)*(lw_nettop - lw_netsrf) + sh + mtpr
-        df_resultado['balanc_surface (W m**-2) (surface_balance)'] = (-1)*(sw_netsrf + lw_netsrf) - sh - lh
+        # Conversões de unidade
+        # tp nas médias mensais do ERA5 é a acumulação média diária (m/dia)
+        dias_no_mes = df["time"].dt.days_in_month
+        df['tp_mm (mm) (Total precipitation)'] = df[col['tp']] * 1000 * dias_no_mes
+        df['avg_tprate_W (W m**-2) (Time-mean total precipitation rate)'] = df[col['avg_tprate']] * cm.L_V
+        df['t2m (°C) (2 metre temperature)'] = df[col['t2m']] - 273.15
+        df['d2m (°C) (2 metre dewpoint temperature)'] = df[col['d2m']] - 273.15
 
-        print(df_resultado.columns)
-        # Salvar CSV
-        out_csv = DIR_ROOT / "dataout" / "tables" / exp_name /f"time_series_{exp_name}_{name}.csv"
+        # Troca de sinal: fluxos passam a ser positivos para cima
+        for abrev in INVERTER_SINAL:
+            df[col[abrev]] *= -1
+
+        df['balanc_earth (W m**-2) (earth_balance)'] = bal["earth"]
+        df['balanc_atmos (W m**-2) (atmospheric_balance)'] = bal["atmos"]
+        df['balanc_surface (W m**-2) (surface_balance)'] = bal["surface"]
+
+        # Por segundo -> por dia (kg m**-2 day**-1 = mm/dia) e tp de m para mm/dia
+        df = cm.converter_unidades(df)
+
+        out_csv = cm.arq_serie(exp_name, name, modo)
         out_csv.parent.mkdir(parents=True, exist_ok=True)
-        df_resultado.to_csv(out_csv, index=False)
+        df.to_csv(out_csv, index=False)
         print(f"Tabela salva em: {out_csv}\n")
 
+
 if __name__ == "__main__":
-    time_series_var()
+    # python time_serie_vars.py [analise|clima]
+    time_series_var(sys.argv[1] if len(sys.argv) > 1 else "analise")

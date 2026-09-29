@@ -1,112 +1,83 @@
-import pandas as pd
-import xarray as xr
-import matplotlib.pyplot as plt
+import sys
 from pathlib import Path
-import re
+
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+import pandas as pd
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import common as cm
+
 
 def plot_vars_time_series():
+    """Série temporal de cada variável de cada box, com a normal climatológica
+    (quando existir) e a média móvel de 12 meses.
 
-    # Dicionário de limites para cada variável
-    limits_dict = {
-        'cbh (m) (Cloud base height)': [0, 5000],
-        'd2m (K) (2 metre dewpoint temperature)': [280, 310],
-        't2m (K) (2 metre temperature)': [260, 310],
-        'hcc ((0 - 1)) (High cloud cover)': [0, 1],
-        'lcc ((0 - 1)) (Low cloud cover)': [0, 1],
-        'mcc ((0 - 1)) (Medium cloud cover)': [0, 1],
-        'tcc ((0 - 1)) (Total cloud cover)': [0, 1],
-        'tcw (kg m**-2) (Total column water)': [0, 100],
-        'tcwv (kg m**-2) (Total column vertically-integrated water vapour)': [0, 100],
-        'tp (m) (Total precipitation)': [0, 0.03],
-        'avg_ie (kg m**-2 s**-1) (Time-mean moisture flux)': [-1e-4, 0],
-        'avg_sdirswrf (W m**-2) (Time-mean surface direct short-wave radiation flux)': [0, 300],
-        'avg_sdirswrfcs (W m**-2) (Time-mean surface direct short-wave radiation flux, clear sky)': [0, 300],
-        'avg_sdlwrf (W m**-2) (Time-mean surface downward long-wave radiation flux)': [300, 500],
-        'avg_sdlwrfcs (W m**-2) (Time-mean surface downward long-wave radiation flux, clear sky)': [300, 450],
-        'avg_sdswrf (W m**-2) (Time-mean surface downward short-wave radiation flux)': [100, 300],
-        'avg_sdswrfcs (W m**-2) (Time-mean surface downward short-wave radiation flux, clear sky)': [200, 400],
-        'avg_sduvrf (W m**-2) (Time-mean surface downward UV radiation flux)': [0, 50],
-        'avg_slhtf (W m**-2) (Time-mean surface latent heat flux)': [0, 150],
-        'avg_snlwrf (W m**-2) (Time-mean surface net long-wave radiation flux)': [0, 200],
-        'avg_snlwrfcs (W m**-2) (Time-mean surface net long-wave radiation flux, clear sky)': [-200, 0],
-        'avg_snswrf (W m**-2) (Time-mean surface net short-wave radiation flux)': [-500, 0],
-        'avg_snswrfcs (W m**-2) (Time-mean surface net short-wave radiation flux, clear sky)': [0, 500],
-        'avg_ishf (W m**-2) (Time-mean surface sensible heat flux)': [-5, 100],
-        'avg_tdswrf (W m**-2) (Time mean top downward short-wave radiation flux)': [0, 600],
-        'avg_tnlwrf (W m**-2) (Time-mean top net long-wave radiation flux)': [0, 400],
-        'avg_tnlwrfcs (W m**-2) (Time-mean top net long-wave radiation flux, clear sky)': [-400, -200],
-        'avg_tnswrf (W m**-2) (Time-mean top net short-wave radiation flux)': [-400, -200],
-        'avg_tnswrfcs (W m**-2) (Time-mean top net short-wave radiation flux, clear sky)': [0, 500],
-        'avg_tprate (kg m**-2 s**-1) (Time-mean total precipitation rate)': [0, 2e-4],
-        'avg_vimdf (kg m**-2 s**-1) (Time-mean total column vertically-integrated moisture divergence flux)': [-2e-4, 2e-4],
-        'tp_mm (mm) (Total precipitation)': [0, 500],
-        'avg_tprate_W (W m**-2) (Time-mean total precipitation rate)': [0, 500],
-        't2m (°C) (2 metre temperature)': [15, 35],
-        'd2m (°C) (2 metre dewpoint temperature)': [5, 30],
-        'balanc_earth (W m**-2) (earth_balance)': [-250, 250],
-        'balanc_atmos (W m**-2) (atmospheric_balance)': [-300, 300],
-        'balanc_surface (W m**-2) (surface_balance)': [-10, 10]
-    }
+    O eixo y tem a mesma amplitude em todos os boxes, centrada nos dados de cada
+    um: a variabilidade é comparável entre domínios sem achatar as curvas de quem
+    tem valores médios diferentes (ex.: temperatura no Sul x Amazônia).
+    Limites fixos podem ser definidos em common.LIMITES_SERIE."""
 
-    DIR_SCRIPT = Path(__file__).resolve().parent
-    DIR_ROOT = DIR_SCRIPT.parent.parent
-
-    # Diretórios importantes
-    DIR_FIGS = DIR_ROOT / "dataout"
-    DIR_BOX = DIR_ROOT / "dataout" / "tables" 
-
-    print("Raiz do projeto:", DIR_ROOT) 
-    print("Diretório do script:", DIR_SCRIPT)
-    print("Diretório de saída:", DIR_FIGS)
-    print("Preparando os plots de todas as variáveis do dataset gerado pelo namelist.txt...")
-
-    df_box = pd.read_csv(DIR_BOX / "boxes.csv")
+    df_box = cm.ler_boxes()
     print(df_box.head())
 
-    # Itera sobre todas as combinações de exp_name e name
-    for idx, row in df_box.iterrows():
-        exp_name = row['exp_name']
-        name     = row['name']
+    # Lê tudo antes para calcular limites comuns a todos os boxes
+    dados = []
+    for _, row in df_box.iterrows():
+        file = cm.arq_serie(row['exp_name'], row['name'])
+        if not file.exists():
+            print(f"Atenção: {file} não encontrado. Rode antes time_serie_vars.py")
+            continue
+        df = pd.read_csv(file, parse_dates=["time"])
+        normal = cm.ler_normal(row)
+        # normal repetida em cada mês da série (mesmo índice que df)
+        normal_serie = normal.loc[df["time"].dt.month].set_index(df.index) if normal is not None else None
+        dados.append((row, df, normal_serie))
 
-        DIR_CSV = DIR_FIGS / "tables" / exp_name 
-        files = sorted(DIR_CSV.glob("*.csv"))
+    variaveis = dict.fromkeys(c for _, df, _ in dados for c in df.columns.drop("time"))
+    for var in variaveis:
+        # limites automáticos de cada box e a maior amplitude entre eles
+        lims = {}
+        for i, (_, df, n) in enumerate(dados):
+            if var in df:
+                lims[i] = cm.limites_auto([df[var]] + ([n[var]] if n is not None and var in n else []))
+        amplitude = max((hi - lo for lo, hi in filter(None, lims.values())), default=None)
+        nome_abreviado, unidade, nome_completo = cm.separar_nome_coluna(var)
 
-    
-        for file in files:
-            print(f"Lendo arquivo: {file}")
-            stem = file.stem
-            # Removemos o prefixo "time_series_"
-            nome_regiao = stem.replace("time_series_", "")
-            print(nome_regiao)
+        for i, (row, df, normal_serie) in enumerate(dados):
+            if var not in df:
+                continue
+            ylim = cm.LIMITES_SERIE.get(var)
+            if ylim is None and lims.get(i) and amplitude:
+                centro = sum(lims[i]) / 2
+                ylim = [centro - amplitude / 2, centro + amplitude / 2]
+            exp_name, name = row['exp_name'], row['name']
 
-            df = pd.read_csv(file, parse_dates=["time"])
+            fig, ax = plt.subplots(figsize=(20, 6))
+            ax.plot(df["time"], df[var], marker='o', markersize=3, linewidth=1, label='Mensal')
+            ax.plot(df["time"], df[var].rolling(12, center=True).mean(),
+                    color='black', linewidth=2, label='Média móvel 12 meses')
+            if normal_serie is not None and var in normal_serie:
+                ax.plot(df["time"], normal_serie[var], color='gray', linestyle='--',
+                        linewidth=1.2, label=cm.NORMAL_ROTULO)
 
-            for var in df.columns:
-                if var == "time":
-                    continue
+            ax.set_title(f'{nome_completo} — {exp_name} {name}')
+            ax.set_xlabel('Tempo')
+            ax.set_ylabel(unidade)
+            ax.xaxis.set_major_locator(mdates.YearLocator())
+            ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
+            ax.grid(True, alpha=0.4)
+            ax.legend(loc='upper left')
+            if ylim:
+                ax.set_ylim(ylim)
 
-                # Regex segura
-                nome_abreviado, unidade, nome_completo = var, "", var
-                match = re.match(r"^(.*?) \((.*?)\) \((.*?)\)$", var)
-                if match:
-                    nome_abreviado, unidade, nome_completo = match.groups()
+            out = cm.dir_figuras(exp_name, name) / f'{exp_name}_{name}_{nome_abreviado}_time_series.jpg'
+            fig.savefig(out, dpi=cm.DPI, bbox_inches='tight')
+            plt.close(fig)
+        print(f'Plotado: {var}')
 
-                print(f"Plotando variável: {var}")
-                fig, ax = plt.subplots(figsize=(20, 6))
-                ax.plot(df["time"], df[var], marker='o')
-                ax.set_title(f'Time Series of {nome_completo}')
-                ax.set_xlabel('Time')
-                ax.set_ylabel(unidade)
-                ax.grid(True)
-                if var in limits_dict:
-                    ax.set_ylim(limits_dict[var])
-
-                outdir = DIR_FIGS / exp_name / name 
-                outdir.mkdir(parents=True, exist_ok=True)
-                fig.savefig(outdir / f'{nome_regiao}_{nome_abreviado}_time_series.jpg', dpi=300, bbox_inches='tight')
-                plt.close(fig)
-
-                print(f'Saved plot for {var} to {outdir / f"{nome_regiao}_{nome_abreviado}_time_series.jpg"}')
 
 if __name__ == "__main__":
     plot_vars_time_series()

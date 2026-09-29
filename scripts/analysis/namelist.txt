@@ -1,9 +1,5 @@
-#longitude -180 | 180 Evite utilizar espaços em branco
-exp_name=EXP1;name=teste1;lat_max=-1;lat_min=-4.5;lon_max=-53.5;lon_min=-56.5
-exp_name=EXP2;name=teste2;lat_max=-5;lat_min=-10;lon_max=-50;lon_min=-55
-
-
-
-
-
-
+#longitude -180 | 180 Evite utilizar espaços em branco. Prefira domínios pequenos: a área baixada é o retângulo que envolve todos os boxes. superficie=todos|terra|oceano (opcional)
+exp_name=EXP1;name=sul;lat_max=-25;lat_min=-35;lon_max=-50;lon_min=-60;superficie=terra
+exp_name=EXP2;name=sao_paulo;lat_max=-17;lat_min=-27;lon_max=-44;lon_min=-54;superficie=terra
+exp_name=EXP3;name=amazonia_oeste;lat_max=0;lat_min=-10;lon_max=-63;lon_min=-73
+exp_name=EXP4;name=amazonia_leste;lat_max=0;lat_min=-10;lon_max=-48;lon_min=-58
